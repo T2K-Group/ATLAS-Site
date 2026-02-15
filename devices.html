@@ -28,44 +28,36 @@
 </head> 
 
 <style>
-/* Full viewport flex layout for wrapper */
+
+#map {
+    width: 100%;
+    height: calc(100vh - 64px); /* adjust if your header height differs */
+}
+
+/* Sidebar default width */
+.app-sidepanel {
+    width: 250px;
+    transition: width 0.3s ease;
+}
+
+/* Collapsed */
+.app-sidepanel.collapsed {
+    width: 0;
+}
+
+/* Make content fill remaining space */
 .app-wrapper {
     display: flex;
-    flex-direction: column; /* stack header, content, footer */
-    height: 100vh;
-    width: 87%;
+    height: 100%;
+    width: 100%;
 }
 
-/* Header and footer: fixed height */
-.app-header {
-    height: 64px; /* your header height */
-    flex-shrink: 0;
-}
-
-.app-footer {
-    height: 40px; /* approximate footer height */
-    flex-shrink: 0;
-    text-align: center;
-    line-height: 40px;
-}
-
-/* Main content: take remaining space */
 .app-content {
-    flex: 1 1 auto; /* grow to fill remaining space */
-    padding: 5px;   /* optional padding around map */
-    box-sizing: border-box;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    flex: 1;
+    height: 100%;
+    z-index: 0;
 }
 
-/* Map fills most of the content area */
-#map {
-    width: 100%;     /* full width of app-content */
-    height: 87%;    /* fill remaining vertical space */
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-}
 
 </style>
 
@@ -102,7 +94,7 @@
 				    <ul class="app-menu list-unstyled accordion" id="menu-accordion">
 					    <li class="nav-item">
 					        <!--//Bootstrap Icons: https://icons.getbootstrap.com/ -->
-					        <a class="nav-link active" href="index.html">
+					        <a class="nav-link" href="index.html">
 						        <span class="nav-icon">
 								<i class="fa-regular fa-map"></i>
 						         </span>
@@ -111,7 +103,7 @@
 					    </li><!--//nav-item-->
 					    <li class="nav-item">
 					        <!--//Bootstrap Icons: https://icons.getbootstrap.com/ -->
-					        <a class="nav-link" href="devices.html">
+					        <a class="nav-link active" href="devices.html">
 						        <span class="nav-icon">
 									<i class="fa-solid fa-satellite"></i>
 						         </span>
@@ -171,13 +163,13 @@
 	    </div><!--//app-sidepanel-->
     </header><!--//app-header-->
     
-	<div class="app-wrapper mw-100">
+	<div class="app-wrapper">
 		<div id="app-sidepanel" class="app-sidepanel"> 
 			<!-- sidebar content -->
 		</div>
 		
-		<div class="app-content">
-			<div id="map"></div>
+		<div class="app-content py-3 px-3">
+			<div id="devices-container"></div>
 		</div>
 	</div>
 	    
@@ -199,10 +191,10 @@
 
 
     <!-- Page Specific JS -->
-	<script src="assets/js/login.js"></script>
     <script src="assets/js/app.js"></script> 
-	<script src="assets/js/map.js"></script> 
-	
+	<script src="assets/js/fetchDevices.js"></script>
+	<script src="assets/js/login.js"></script>
+
 </body>
 </html> 
 
