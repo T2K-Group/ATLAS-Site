@@ -14,7 +14,7 @@ async function fetchUsersWithAuth() {
     }
 
     try {
-        const response = await fetch("http://localhost:8001/fetch/users", {
+        const response = await fetch("https://atlasapi.t2k.group/fetch/users", {
             method: "GET",
             headers: {
                 "Authorization": `Bearer ${token}`,
