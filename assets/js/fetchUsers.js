@@ -212,4 +212,21 @@ async function initUsers() {
   }
 }
 
+const modal = document.getElementById("edit-user-modal");
+
+function openModal() {
+  modal.classList.add("show");
+  modal.hidden = false;
+}
+
+function closeModal() {
+  modal.classList.remove("show");
+  modal.hidden = true;
+}
+
+// Use these in your delegated click handler:
+openModal();   // instead of modal.hidden = false;
+closeModal();  // instead of modal.hidden = true;
+
+
 initUsers();

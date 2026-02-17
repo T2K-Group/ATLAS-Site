@@ -28,24 +28,56 @@
 
 </head> 
 
-<style>
-	#edit-user-modal {
-	  position: fixed;
-	  top: 50%;
-	  left: 50%;
-	  transform: translate(-50%, -50%);
-	  background: white;
-	  z-index: 1050;
-	  display: block;
-	  max-width: 90%;
-	  border-radius: 8px;
-	  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-	}
-	#edit-user-modal[hidden] {
-	  display: none;
-	}
-</style>
-	
+<!-- Edit User Modal -->
+<div id="edit-user-modal" class="modal-backdrop" hidden>
+	<div class="modal-content">
+	  <h5>Edit User</h5>
+  
+	  <label class="mt-2">Name</label>
+	  <input id="edit-name" class="form-control" />
+  
+	  <label class="mt-2">Role</label>
+	  <select id="edit-role" class="form-select">
+		<option value="0">Inactive</option>
+		<option value="1">User</option>
+		<option value="2">Admin</option>
+	  </select>
+  
+	  <div class="d-flex justify-content-end gap-2 mt-3">
+		<button id="edit-cancel" class="btn btn-sm btn-secondary">Cancel</button>
+		<button id="edit-save" class="btn btn-sm btn-primary">Save</button>
+	  </div>
+	</div>
+  </div>
+  
+  <style>
+  /* Modal backdrop */
+  #edit-user-modal {
+	position: fixed;
+	inset: 0;
+	display: none; /* hidden by default */
+	align-items: center;
+	justify-content: center;
+	background: rgba(0,0,0,0.5);
+	z-index: 1050;
+  }
+  
+  /* Show modal when not hidden */
+  #edit-user-modal.show {
+	display: flex;
+  }
+  
+  /* Modal content */
+  #edit-user-modal .modal-content {
+	background: #fff;
+	padding: 20px;
+	border-radius: 8px;
+	width: 320px;
+	max-width: 90%;
+	box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  }
+  </style>
+  
 
 <body class="app">   	
     <header class="app-header fixed-top">	   	            
