@@ -75,6 +75,21 @@
         orgImg.src = user.orglogo;
         orgImg.removeAttribute("hidden");
       }
+
+      // if role = 1 set anything with class user-hide to hidden
+      //if role = 2 set anything with class la-hide to hidden
+
+      if (user.role === 1) {
+        document.querySelectorAll(".user-hide").forEach(el => {
+          el.setAttribute("hidden", "true");
+        });
+      }
+  
+      if (user.role <= 2) {
+        document.querySelectorAll(".la-hide").forEach(el => {
+          el.setAttribute("hidden", "true");
+        });
+      }
   
       // Optional: make user globally available
       window.currentUser = user;
