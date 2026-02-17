@@ -168,6 +168,9 @@ document.addEventListener("click", async function (e) {
       </select>
     `;
 
+    console.log("roleCell:", roleCell);
+
+
     actionsCell.innerHTML = `
       <button class="btn btn-sm btn-success save-btn me-1">
         <i class="fa-solid fa-check"></i>
