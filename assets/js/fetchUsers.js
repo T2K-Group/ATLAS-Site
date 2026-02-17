@@ -43,7 +43,7 @@ async function fetchUsersWithAuth() {
     const token = getCookie("session_id");
     if (!token) return false;
   
-    const response = await fetch("http://localhost:8080/update/users", {
+    const response = await fetch("https://atlasapi.t2k.group/update/users", {
       method: "PATCH",
       headers: {
         Authorization: `Bearer ${token}`,
@@ -122,24 +122,38 @@ async function fetchUsersWithAuth() {
         const isActive = user.role !== 0;
   
         tr.innerHTML = `
-          <td>${user.name}</td>
-          <td>${user.email}</td>
-          <td>
+        <td>
+          <div class="fw-semibold">${user.name}</div>
+          <div class="d-md-none mt-1">
             <span class="badge ${roleInfo.badge}">
               ${roleInfo.label}
             </span>
-          </td>
-          <td>
-            <span class="badge ${isActive ? "bg-success" : "bg-secondary"}">
-              ${isActive ? "Active" : "Inactive"}
-            </span>
-          </td>
-          <td class="d-flex gap-2">
-            <button class="btn btn-sm btn-outline-primary edit-btn">
-              <i class="fa-solid fa-pencil"></i>
-            </button>
-          </td>
-        `;
+          </div>
+        </td>
+      
+        <td class="d-none d-md-table-cell">
+          ${user.email}
+        </td>
+      
+        <td class="d-none d-md-table-cell">
+          <span class="badge ${roleInfo.badge}">
+            ${roleInfo.label}
+          </span>
+        </td>
+      
+        <td>
+          <span class="badge ${isActive ? "bg-success" : "bg-secondary"}">
+            ${isActive ? "Active" : "Inactive"}
+          </span>
+        </td>
+      
+        <td class="text-end">
+          <button class="btn btn-sm btn-outline-primary edit-btn">
+            <i class="fa-solid fa-pencil"></i>
+          </button>
+        </td>
+      `;
+      
   
         /* -------- Edit button -------- */
         tr.querySelector(".edit-btn").addEventListener("click", () => {
