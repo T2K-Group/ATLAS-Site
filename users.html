@@ -13,6 +13,7 @@
     <meta name="author" content="Xiaoying Riley at 3rd Wave Media">    
     <link rel="shortcut icon" href="favicon.ico"> 
 
+	
 
     
     <!-- FontAwesome JS-->
@@ -27,6 +28,24 @@
 
 </head> 
 
+<style>
+	#edit-user-modal {
+	  position: fixed;
+	  top: 50%;
+	  left: 50%;
+	  transform: translate(-50%, -50%);
+	  background: white;
+	  z-index: 1050;
+	  display: block;
+	  max-width: 90%;
+	  border-radius: 8px;
+	  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+	}
+	#edit-user-modal[hidden] {
+	  display: none;
+	}
+</style>
+	
 
 <body class="app">   	
     <header class="app-header fixed-top">	   	            
