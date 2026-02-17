@@ -28,32 +28,6 @@ async function fetchUsersWithAuth() {
   }
 }
 
-/* ----------------------------------------------------
-   Bulk update helper
----------------------------------------------------- */
-async function updateUsersBulk(updates) {
-  function getCookie(name) {
-    return document.cookie
-      .split("; ")
-      .find(row => row.startsWith(name + "="))
-      ?.split("=")[1];
-  }
-
-  const token = getCookie("session_id");
-  if (!token) return false;
-
-  const response = await fetch("https://atlasapi.t2k.group/update/users", {
-    method: "PATCH",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify(updates)
-  });
-
-  const result = await response.json();
-  return result?.status === true;
-}
 
 /* ----------------------------------------------------
    Role helpers
@@ -123,84 +97,183 @@ function renderUsersTable(apiResponse) {
       const isActive = user.role !== 0;
 
       tr.innerHTML = `
-        <td>
-          <div class="fw-semibold">${user.name}</div>
-          <div class="d-md-none mt-1">
-            <span class="badge ${roleInfo.badge}">${roleInfo.label}</span>
-          </div>
-        </td>
-        <td class="d-none d-md-table-cell">${user.email}</td>
-        <td class="d-none d-md-table-cell">
+      <td>
+        <div class="fw-semibold">${user.name}</div>
+        <div class="d-md-none mt-1">
           <span class="badge ${roleInfo.badge}">${roleInfo.label}</span>
-        </td>
-        <td>
-          <span class="badge ${isActive ? "bg-success" : "bg-secondary"}">
-            ${isActive ? "Active" : "Inactive"}
-          </span>
-        </td>
-        <td class="text-end">
-          <button class="btn btn-sm btn-outline-primary edit-btn">
-            <i class="fa-solid fa-pencil"></i>
-          </button>
-        </td>
-      `;
+        </div>
+      </td>
+    
+      <td class="d-none d-md-table-cell">
+        ${user.email}
+      </td>
+    
+      <td class="d-none d-md-table-cell role-cell">
+        <span class="badge ${roleInfo.badge} role-badge">
+          ${roleInfo.label}
+        </span>
+      </td>
+    
+      <td class="status-cell">
+        <span class="status-pill ${isActive ? "active" : "inactive"}">
+          ${isActive ? "Active" : "Inactive"}
+        </span>
+      </td>
+    
+      <td class="text-end actions-cell">
+        <button class="btn btn-sm btn-outline-primary edit-btn">
+          <i class="fa-solid fa-pencil"></i>
+        </button>
+      </td>
+    `;
+    
       tbody.appendChild(tr);
     });
 
     container.appendChild(table);
   }
 }
-
 /* ----------------------------------------------------
-   Delegated edit modal handling
+   Edit / Save / Discard Logic (Bulk-ready format)
 ---------------------------------------------------- */
-document.getElementById("users-table-container").addEventListener("click", async e => {
-  const btn = e.target.closest(".edit-btn");
-  if (!btn) return;
 
-  const tr = btn.closest("tr");
-  const userId = tr.dataset.userid;
+document.addEventListener("click", async function (e) {
+  const editBtn = e.target.closest(".edit-btn");
+  const saveBtn = e.target.closest(".save-btn");
+  const discardBtn = e.target.closest(".discard-btn");
+
+  if (!editBtn && !saveBtn && !discardBtn) return;
+
+  const row = e.target.closest("tr");
+  const userId = row?.dataset.userid;
   const user = window.currentUsers[userId];
-  if (!user) return;
+  if (!row || !user) return;
 
-  const modal = document.getElementById("edit-user-modal");
-  const nameInput = document.getElementById("edit-name");
-  const roleSelect = document.getElementById("edit-role");
-  const saveBtn = document.getElementById("edit-save");
-  const cancelBtn = document.getElementById("edit-cancel");
+  const roleCell = row.querySelector(".role-cell");
+  const actionsCell = row.querySelector(".actions-cell");
 
-  nameInput.value = user.name;
-  roleSelect.value = user.role;
-  modal.hidden = false;
+  /* -------------------- EDIT -------------------- */
+  if (editBtn) {
 
-  const close = () => {
-    modal.hidden = true;
-    saveBtn.onclick = null;
-  };
-  cancelBtn.onclick = close;
+    // Block role 3 (Global Admin)
+    if (user.role === 3) return;
 
-  saveBtn.onclick = async () => {
-    const updates = {};
-    updates[user.userId] = {};
+    row.classList.add("editing-row");
 
-    const newName = nameInput.value.trim();
-    const newRole = parseInt(roleSelect.value, 10);
+    roleCell.innerHTML = `
+      <select class="form-select form-select-sm role-select">
+        <option value="0" ${user.role === 0 ? "selected" : ""}>Inactive</option>
+        <option value="1" ${user.role === 1 ? "selected" : ""}>User</option>
+        <option value="2" ${user.role === 2 ? "selected" : ""}>Admin</option>
+      </select>
+    `;
 
-    if (newName !== user.name) updates[user.userId].name = newName;
-    if (newRole !== user.role) updates[user.userId].role = newRole;
+    actionsCell.innerHTML = `
+      <button class="btn btn-sm btn-success save-btn me-1">
+        <i class="fa-solid fa-check"></i>
+      </button>
+      <button class="btn btn-sm btn-outline-secondary discard-btn">
+        <i class="fa-solid fa-xmark"></i>
+      </button>
+    `;
+  }
 
-    if (!Object.keys(updates[user.userId]).length) {
-      close();
+  /* -------------------- SAVE -------------------- */
+  if (saveBtn) {
+    const select = row.querySelector(".role-select");
+    const newRole = parseInt(select.value);
+
+    const payload = {
+      [user.userId]: {
+        name: user.name,
+        role: newRole
+      }
+    };
+
+    saveBtn.disabled = true;
+
+    const success = await updateUsersBulk(payload);
+
+    if (!success) {
+      alert("Failed to update user.");
+      saveBtn.disabled = false;
       return;
     }
 
-    const success = await updateUsersBulk(updates);
-    if (success) {
-      initUsers(); // refresh table
-      close();
-    }
-  };
+    // Update local state
+    user.role = newRole;
+
+    const roleInfo = getRoleLabel(newRole);
+
+    roleCell.innerHTML = `
+      <span class="badge ${roleInfo.badge} role-badge">
+      
+        ${roleInfo.label}
+      </span>
+    `;
+
+    actionsCell.innerHTML = `
+      <button class="btn btn-sm btn-outline-primary edit-btn">
+        <i class="fa-solid fa-pencil"></i>
+      </button>
+    `;
+    initUsers()
+    row.classList.remove("editing-row");
+    
+  }
+
+  /* -------------------- DISCARD -------------------- */
+  if (discardBtn) {
+
+    const roleInfo = getRoleLabel(user.role);
+
+    roleCell.innerHTML = `
+      <span class="badge ${roleInfo.badge} role-badge">
+        ${roleInfo.label}
+      </span>
+    `;
+
+    actionsCell.innerHTML = `
+      <button class="btn btn-sm btn-outline-primary edit-btn">
+        <i class="fa-solid fa-pencil"></i>
+      </button>
+    `;
+
+    row.classList.remove("editing-row");
+  }
 });
+
+async function updateUsersBulk(updatesObject) {
+  function getCookie(name) {
+    return document.cookie
+      .split("; ")
+      .find(row => row.startsWith(name + "="))
+      ?.split("=")[1];
+  }
+
+  const token = getCookie("session_id");
+  if (!token) return false;
+
+  try {
+    const response = await fetch("https://atlasapi.t2k.group/update/users", {
+      method: "PATCH",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(updatesObject)
+    });
+
+    if (!response.ok) return false;
+
+    const result = await response.json();
+    return result?.status === true;
+  } catch {
+    return false;
+  }
+}
+
+
 
 /* ----------------------------------------------------
    Initialize
@@ -212,21 +285,5 @@ async function initUsers() {
   }
 }
 
-const modal = document.getElementById("edit-user-modal");
 
-function openModal() {
-  modal.classList.add("show");
-  modal.hidden = false;
-}
-
-function closeModal() {
-  modal.classList.remove("show");
-  modal.hidden = true;
-}
-
-// Use these in your delegated click handler:
-openModal();   // instead of modal.hidden = false;
-closeModal();  // instead of modal.hidden = true;
-
-
-initUsers();
+initUsers()
