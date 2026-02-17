@@ -27,48 +27,6 @@
 
 </head> 
 
-<style>
-/* Full viewport flex layout for wrapper */
-.app-wrapper {
-    display: flex;
-    flex-direction: column; /* stack header, content, footer */
-    height: 100vh;
-    width: 87%;
-}
-
-/* Header and footer: fixed height */
-.app-header {
-    height: 64px; /* your header height */
-    flex-shrink: 0;
-}
-
-.app-footer {
-    height: 40px; /* approximate footer height */
-    flex-shrink: 0;
-    text-align: center;
-    line-height: 40px;
-}
-
-/* Main content: take remaining space */
-.app-content {
-    flex: 1 1 auto; /* grow to fill remaining space */
-    padding: 5px;   /* optional padding around map */
-    box-sizing: border-box;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-/* Map fills most of the content area */
-#map {
-    width: 100%;     /* full width of app-content */
-    height: 87%;    /* fill remaining vertical space */
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-}
-
-</style>
-
 
 <body class="app">   	
     <header class="app-header fixed-top">	   	            
@@ -176,7 +134,7 @@
 			<!-- sidebar content -->
 		</div>
 		
-		<div class="app-content">
+		<div class="app-content py-2 px-3">
 			<div id="users-table-container"></div>
 		</div>
 	</div>
