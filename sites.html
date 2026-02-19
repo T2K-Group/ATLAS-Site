@@ -148,10 +148,60 @@
 	    
     </div><!--//app-wrapper-->   
 	
+	<!-- Add Site Modal -->
+	<!-- Add Site Modal -->
+	<div class="modal fade" id="addSiteModal" tabindex="-1">
+	<div class="modal-dialog">
+		<div class="modal-content">
+		<div class="modal-header">
+			<h5 class="modal-title">Add Site</h5>
+			<button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+		</div>
+		<div class="modal-body">
 
-		
+			<input type="hidden" id="new-site-org-id">
 
- 
+			<div class="mb-2">
+			<label>Name</label>
+			<input type="text" id="new-site-name" class="form-control">
+			</div>
+
+			<div class="mb-2">
+			<label>Address</label>
+			<input type="text" id="new-site-address" class="form-control">
+			</div>
+
+			<div class="mb-2">
+			<label>Postcode</label>
+			<input type="text" id="new-site-postcode" class="form-control">
+			</div>
+
+			<div class="mb-2">
+			<label>Location</label>
+			<div id="new-site-map" style="height: 300px; border:1px solid #ccc;"></div>
+			</div>
+
+			<div class="mt-2">
+			<label>Radius (m)</label>
+			<input type="number" id="new-site-radius" class="form-control" value="100">
+			</div>
+
+			<div class="form-check mt-2">
+			<input class="form-check-input" type="checkbox" id="new-site-active" checked>
+			<label class="form-check-label">Active</label>
+			</div>
+
+		</div>
+		<div class="modal-footer">
+			<button class="btn btn-success" id="create-site-btn">Create</button>
+		</div>
+		</div>
+	</div>
+	</div>
+
+			
+
+	
     <!-- Javascript -->          
     <script src="assets/plugins/popper.min.js"></script>
     <script src="assets/plugins/bootstrap/js/bootstrap.min.js"></script>  

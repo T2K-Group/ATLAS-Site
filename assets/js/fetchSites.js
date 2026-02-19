@@ -1,3 +1,5 @@
+let addSiteMap, addSiteMarker, addSiteCircle;
+
 async function fetchSitesWithAuth() {
     // Helper to read cookies
     function getCookie(name) {
@@ -52,6 +54,17 @@ function renderSitesTable(apiResponse) {
         heading.textContent = org.org_name;
         heading.style.marginTop = "20px";
         container.appendChild(heading);
+
+        // Add Site button
+        const addBtn = document.createElement("button");
+        addBtn.className = "btn btn-sm btn-primary mb-2";
+        addBtn.textContent = "Add Site";
+
+        addBtn.addEventListener("click", () => {
+            openAddSiteModal(orgId, org.org_name);
+        });
+
+        container.appendChild(addBtn);
 
         const table = document.createElement("table");
         table.className = "table table-hover";
@@ -136,6 +149,9 @@ function renderSitesTable(apiResponse) {
 
         container.appendChild(table);
     }
+
+
+
 }
 
 
@@ -150,8 +166,11 @@ function initMapEditor(site) {
     const mapId = `map-${site.id}`;
     if (document.getElementById(mapId)._leaflet_id) return;
 
-    const lat = site.lat || -26.2041;  // fallback coords
-    const lng = site.lon || 28.0473;
+    const defaultLat = 51.5080; // Trafalgar Square
+    const defaultLon = -0.1281;
+
+    const lat = site.lat || defaultLat;  // fallback coords
+    const lng = site.lon || defaultLon;
 
     const map = L.map(mapId).setView([lat, lng], 15);
 
@@ -230,6 +249,124 @@ function initMapEditor(site) {
         map.invalidateSize();
     }, 200);
 }
+
+
+function openAddSiteModal(orgId, orgName) {
+
+    document.getElementById("new-site-org-id").value = orgId;
+
+    document.querySelector("#addSiteModal .modal-title").textContent =
+        `Add Site - ${orgName}`;
+
+    const modalEl = document.getElementById("addSiteModal");
+    const modal = new bootstrap.Modal(modalEl);
+    modal.show();
+
+    // Initialize map when modal is fully shown
+    modalEl.addEventListener("shown.bs.modal", () => {
+
+        const radiusInput = document.getElementById("new-site-radius");
+        const mapDiv = document.getElementById("new-site-map");
+
+        if (!mapDiv || !radiusInput) {
+            console.error("Add site modal map or radius input not found");
+            return;
+        }
+
+        const defaultLat = 51.5080; // Trafalgar Square
+        const defaultLon = -0.1281;
+        const radius = parseFloat(radiusInput.value) || 100;
+
+        // Remove previous map if exists
+        if (addSiteMap) {
+            addSiteMap.remove();
+        }
+
+        addSiteMap = L.map("new-site-map").setView([defaultLat, defaultLon], 15);
+
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+            attribution: "© OpenStreetMap contributors"
+        }).addTo(addSiteMap);
+
+        addSiteMarker = L.marker([defaultLat, defaultLon], { draggable: true }).addTo(addSiteMap);
+
+        addSiteCircle = L.circle([defaultLat, defaultLon], {
+            radius: radius,
+            color: "blue",
+            fillOpacity: 0.2
+        }).addTo(addSiteMap);
+
+        // Update circle when marker moves
+        addSiteMarker.on("drag", (e) => {
+            addSiteCircle.setLatLng(e.latlng);
+        });
+
+        // Update circle radius live
+        radiusInput.addEventListener("input", () => {
+            addSiteCircle.setRadius(parseFloat(radiusInput.value) || 0);
+        });
+
+        // Ensure map renders correctly
+        setTimeout(() => addSiteMap.invalidateSize(), 200);
+
+    }, { once: true });
+}
+
+
+document.getElementById("create-site-btn").addEventListener("click", async () => {
+
+    const orgId = document.getElementById("new-site-org-id").value;
+    const name = document.getElementById("new-site-name").value;
+    const address = document.getElementById("new-site-address").value;
+    const postcode = document.getElementById("new-site-postcode").value;
+    const radius = parseFloat(document.getElementById("new-site-radius").value) || 100;
+    const active = document.getElementById("new-site-active").checked ? 1 : 0;
+
+    if (!name || !address || !postcode) {
+        alert("Please enter site name, address, and postcode");
+        return;
+    }
+
+    const payload = {
+        org_id: parseInt(orgId),
+        name: name,
+        address: address,
+        postcode: postcode,      // <-- new field
+        lat: addSiteMarker.getLatLng().lat,
+        lon: addSiteMarker.getLatLng().lng,
+        radius: radius,
+        active: active
+    };
+
+    try {
+        const token = document.cookie
+            .split("; ")
+            .find(row => row.startsWith("session_id="))
+            ?.split("=")[1];
+
+        const response = await fetch("https://atlasapi.t2k.group/create/sites", {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${token}`,
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(payload)
+        });
+
+        const result = await response.json();
+
+        if (!response.ok || !result.status) {
+            throw new Error(result.message || "Creation failed");
+        }
+
+        alert("Site created successfully");
+        location.reload();
+
+    } catch (err) {
+        console.error(err);
+        alert("Error creating site");
+    }
+});
 
 
 initSites();
