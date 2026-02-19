@@ -108,16 +108,28 @@ function renderSitesTable(apiResponse) {
             dropdownCell.colSpan = 3;
             dropdownCell.innerHTML = `
                 <div style="padding:15px; background:#f8f9fa;">
+                    <div class="mb-2">
+                        <label>Name</label>
+                        <input type="text" class="form-control site-name" value="${site.name}">
+                    </div>
+                    <div class="mb-2">
+                        <label>Address</label>
+                        <input type="text" class="form-control site-address" value="${site.address || ''}">
+                    </div>
+                    <div class="mb-2">
+                        <label>Postcode</label>
+                        <input type="text" class="form-control site-postcode" value="${site.postcode || ''}">
+                    </div>
                     <div id="map-${site.id}" style="height:400px;"></div>
 
                     <div class="mt-3 d-flex gap-3 align-items-center">
                         <label>Radius (m):</label>
-                        <input type="number" class="form-control radius-input" 
-                               value="${site.radius}" style="width:120px;">
+                        <input type="number" class="form-control radius-input" value="${site.radius}" style="width:120px;">
                         <button class="btn btn-success save-btn">Save</button>
                     </div>
                 </div>
             `;
+
 
             dropdownRow.appendChild(dropdownCell);
 
@@ -195,18 +207,24 @@ function initMapEditor(site) {
     const radiusInput = container.querySelector(".radius-input");
     const saveBtn = container.querySelector(".save-btn");
 
+    // Grab new text inputs
+    const nameInput = container.querySelector(".site-name");
+    const addressInput = container.querySelector(".site-address");
+    const postcodeInput = container.querySelector(".site-postcode");
+
     // Live radius update
     radiusInput.addEventListener("input", () => {
         const newRadius = parseInt(radiusInput.value) || 0;
         circle.setRadius(newRadius);
     });
 
-  // Save button
+    // Save button
     saveBtn.addEventListener("click", async () => {
 
         const updatedData = {
-            name: site.name,
-            address: site.address,
+            name: nameInput.value,
+            address: addressInput.value,
+            postcode: postcodeInput.value,
             lat: marker.getLatLng().lat,
             lon: marker.getLatLng().lng,
             radius: parseFloat(radiusInput.value),
@@ -237,12 +255,18 @@ function initMapEditor(site) {
             }
 
             alert("Site updated successfully");
+            // Optional: refresh table or update row
+            site.name = updatedData.name;
+            site.address = updatedData.address;
+            site.postcode = updatedData.postcode;
+            container.closest("tr").previousElementSibling.querySelector("td").textContent = updatedData.name;
 
         } catch (err) {
             console.error("Update failed:", err);
             alert("Error updating site");
         }
     });
+
 
 
     setTimeout(() => {
