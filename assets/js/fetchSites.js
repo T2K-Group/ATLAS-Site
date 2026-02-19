@@ -182,20 +182,49 @@ function initMapEditor(site) {
         circle.setRadius(newRadius);
     });
 
-    // Save button
-    saveBtn.addEventListener("click", () => {
+  // Save button
+    saveBtn.addEventListener("click", async () => {
 
         const updatedData = {
-            id: site.id,
             name: site.name,
-            latitude: marker.getLatLng().lat,
-            longitude: marker.getLatLng().lng,
-            radius: parseInt(radiusInput.value),
+            address: site.address,
+            lat: marker.getLatLng().lat,
+            lon: marker.getLatLng().lng,
+            radius: parseFloat(radiusInput.value),
             active: site.active
         };
 
-        console.log("Updated Site:", updatedData);
+        try {
+            const token = document.cookie
+                .split("; ")
+                .find(row => row.startsWith("session_id="))
+                ?.split("=")[1];
+
+            const response = await fetch("https://atlasapi.t2k.group/update/sites", {
+                method: "PATCH",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    [site.id]: updatedData
+                })
+            });
+
+            const result = await response.json();
+
+            if (!response.ok || !result.status) {
+                throw new Error(result.message || "Update failed");
+            }
+
+            alert("Site updated successfully");
+
+        } catch (err) {
+            console.error("Update failed:", err);
+            alert("Error updating site");
+        }
     });
+
 
     setTimeout(() => {
         map.invalidateSize();
