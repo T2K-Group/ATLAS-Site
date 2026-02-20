@@ -204,17 +204,21 @@ function renderSitesPerOrg(sitesData, layerControl) {
     for (const orgId in sitesData.data) {
       const org = sitesData.data[orgId];
       const orgName = org.org_name || `Org ${orgId}`;
-  
+
+
       const sitesLayer = L.layerGroup();
       orgSiteLayers[orgName] = sitesLayer;
   
       org.sites.forEach(site => {
-        if (site.lat == null || site.lon == null) return;
+
+
+
+        if (site.lat == null || site.lon == null || site.active == 0) return;
   
         const marker = L.circleMarker([site.lat, site.lon], {
           radius: 8,
-          color: site.active ? "#00695c" : "#9e9e9e",
-          fillColor: site.active ? "#26a69a" : "#bdbdbd",
+          color: site.hq ? "#00695c" : "#DC143C",
+          fillColor: site.hq ? "#26a69a" : "#DC143C",
           fillOpacity: 0.9
         });
   
@@ -230,7 +234,7 @@ function renderSitesPerOrg(sitesData, layerControl) {
         if (site.radius) {
           L.circle([site.lat, site.lon], {
             radius: site.radius,
-            color: "#26a69a",
+            color: site.hq ? "#26a69a" : "#DC143C",
             fillOpacity: 0.1
           }).addTo(sitesLayer);
         }

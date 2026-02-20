@@ -106,6 +106,8 @@ function renderSitesTable(apiResponse) {
 
             const dropdownCell = document.createElement("td");
             dropdownCell.colSpan = 3;
+            const toggleBtnLabel = site.active ? "Deactivate" : "Activate";
+            const toggleBtnClass = site.active ? "btn-danger" : "btn-success";
             dropdownCell.innerHTML = `
                 <div style="padding:15px; background:#f8f9fa;">
                     <div class="mb-2">
@@ -126,6 +128,9 @@ function renderSitesTable(apiResponse) {
                         <label>Radius (m):</label>
                         <input type="number" class="form-control radius-input" value="${site.radius}" style="width:120px;">
                         <button class="btn btn-success save-btn">Save</button>
+                        <button class="btn ${toggleBtnClass} toggle-active-btn">
+                            ${toggleBtnLabel}
+                        </button>
                     </div>
                 </div>
             `;
@@ -206,6 +211,7 @@ function initMapEditor(site) {
     const container = document.getElementById(mapId).closest("td");
     const radiusInput = container.querySelector(".radius-input");
     const saveBtn = container.querySelector(".save-btn");
+    const toggleBtn = container.querySelector(".toggle-active-btn");
 
     // Grab new text inputs
     const nameInput = container.querySelector(".site-name");
@@ -254,8 +260,7 @@ function initMapEditor(site) {
                 throw new Error(result.message || "Update failed");
             }
 
-            alert("Site updated successfully");
-            // Optional: refresh table or update row
+            showToast("Site updated successfully", "success");
             site.name = updatedData.name;
             site.address = updatedData.address;
             site.postcode = updatedData.postcode;
@@ -263,10 +268,68 @@ function initMapEditor(site) {
 
         } catch (err) {
             console.error("Update failed:", err);
-            alert("Error updating site");
+            showToast("Error updating site", "danger");
         }
     });
 
+    toggleBtn.addEventListener("click", async () => {
+
+        const newActiveState = site.active ? 0 : 1;
+        const actionText = newActiveState ? "activate" : "deactivate";
+
+        try {
+            const token = document.cookie
+                .split("; ")
+                .find(row => row.startsWith("session_id="))
+                ?.split("=")[1];
+
+            const response = await fetch("https://atlasapi.t2k.group/update/sites", {
+                method: "PATCH",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    [site.id]: {
+                        name: nameInput.value,
+                        address: addressInput.value,
+                        postcode: postcodeInput.value,
+                        lat: marker.getLatLng().lat,
+                        lon: marker.getLatLng().lng,
+                        radius: parseFloat(radiusInput.value),
+                        active: newActiveState
+                    }
+                })
+            });
+
+            const result = await response.json();
+
+            if (!response.ok || !result.status) {
+                throw new Error(result.message || "Update failed");
+            }
+
+            // Update local state
+            site.active = newActiveState;
+
+            // Update status badge
+            const row = container.closest("tr").previousElementSibling;
+            row.querySelector("td:nth-child(2)").innerHTML =
+                newActiveState
+                    ? `<span class="badge bg-success">Active</span>`
+                    : `<span class="badge bg-secondary">Inactive</span>`;
+
+            // Swap button appearance
+            toggleBtn.textContent = newActiveState ? "Deactivate" : "Activate";
+            toggleBtn.classList.remove("btn-danger", "btn-success");
+            toggleBtn.classList.add(newActiveState ? "btn-danger" : "btn-success");
+
+            showToast(`Site ${newActiveState ? "activated" : "deactivated"} successfully`, "success");
+
+        } catch (err) {
+            console.error("Toggle failed:", err);
+            showToast("Error toggling site status", "danger");
+        }
+    });
 
 
     setTimeout(() => {
@@ -383,14 +446,46 @@ document.getElementById("create-site-btn").addEventListener("click", async () =>
             throw new Error(result.message || "Creation failed");
         }
 
-        alert("Site created successfully");
+        showToast("Site created successfully", "success");
         location.reload();
 
     } catch (err) {
         console.error(err);
-        alert("Error creating site");
+        showToast("Error creating site", "danger");
     }
 });
 
+
+function showToast(message, type = "success", duration = 3000) {
+    // type: "success", "danger", "info", "warning"
+    const container = document.getElementById("toast-container");
+    if (!container) return;
+
+    const toastId = `toast-${Date.now()}`;
+
+    const toastEl = document.createElement("div");
+    toastEl.id = toastId;
+    toastEl.className = `toast align-items-center text-bg-${type} border-0`;
+    toastEl.setAttribute("role", "alert");
+    toastEl.setAttribute("aria-live", "assertive");
+    toastEl.setAttribute("aria-atomic", "true");
+
+    toastEl.innerHTML = `
+        <div class="d-flex">
+            <div class="toast-body">${message}</div>
+            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+        </div>
+    `;
+
+    container.appendChild(toastEl);
+
+    const toast = new bootstrap.Toast(toastEl, { delay: duration });
+    toast.show();
+
+    // Remove from DOM when hidden
+    toastEl.addEventListener("hidden.bs.toast", () => {
+        toastEl.remove();
+    });
+}
 
 initSites();
