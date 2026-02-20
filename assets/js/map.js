@@ -5,7 +5,7 @@ const orgSiteLayers = {};
 
 
 document.addEventListener("DOMContentLoaded", function () {
-    map = L.map("map", { zoomControl: true }).setView([54.5, -3], 6);
+    map = L.map("map", { zoomControl: true, fullscreenControl: true }).setView([54.5, -3], 6);
 
     // Base map (OSM)
     const osmLayer = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
@@ -27,7 +27,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const overlayMaps = {};
 
     // Add layer control to map (empty for now)
-    const layerControl = L.control.layers(baseMaps, overlayMaps, { collapsed: false }).addTo(map);
+    const layerControl = L.control.layers(baseMaps, overlayMaps, { collapsed: true }).addTo(map);
 
     // Fix resize for sidebar toggle
     const toggle = document.getElementById("sidepanel-toggler");
