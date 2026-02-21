@@ -1,65 +1,168 @@
-async function fetchDevicesWithAuth() {
-    // Helper to read cookies
-    function getCookie(name) {
-      return document.cookie
-        .split("; ")
-        .find(row => row.startsWith(name + "="))
-        ?.split("=")[1];
-    }
-  
-    const token = getCookie("session_id");
-  
-    if (!token) {
-      console.error("No session_id cookie found!");
-      return;
-    }
-  
-    try {
+// -------------------------
+// IndexedDB Helper
+// -------------------------
+function openDB() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open("DevicesDB", 1);
 
-      const response = await fetch("https://atlasapi.t2k.group/fetch/devices", {
-        method: "GET",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json"
-        }
-      });
-  
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+    request.onupgradeneeded = event => {
+      const db = event.target.result;
+
+      if (!db.objectStoreNames.contains("orgs")) {
+        db.createObjectStore("orgs", { keyPath: "orgId" });
       }
-  
-      const data = await response.json();
-      return data
-  
-    } catch (err) {
-      console.error("Error fetching devices:", err);
+
+      if (!db.objectStoreNames.contains("devices")) {
+        const deviceStore = db.createObjectStore("devices", { keyPath: "name" });
+        deviceStore.createIndex("orgId", "orgId", { unique: false });
+      }
+    };
+
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+// -------------------------
+// Save API data to IndexedDB
+// -------------------------
+async function saveDevicesToDB(apiData) {
+  const db = await openDB();
+  const tx = db.transaction(["orgs", "devices"], "readwrite");
+  const orgStore = tx.objectStore("orgs");
+  const deviceStore = tx.objectStore("devices");
+
+  for (const orgId in apiData.data) {
+    if (orgId === "fetch_ts") continue;
+    const org = apiData.data[orgId];
+
+    // Save org
+    orgStore.put({ orgId, orgName: org.orgName });
+
+    // Save/update devices
+    for (const device of org.devices) {
+      deviceStore.put({ ...device, orgId });
     }
   }
-  
-  
+
+  return tx.complete;
+}
+
+// -------------------------
+// Load devices from IndexedDB
+// -------------------------
+async function getDevicesFromDB() {
+  const db = await openDB();
+  const tx = db.transaction(["orgs", "devices"], "readonly");
+  const orgStore = tx.objectStore("orgs");
+  const deviceStore = tx.objectStore("devices");
+
+  // Wrap getAll in promises
+  const orgsArray = await new Promise((resolve, reject) => {
+    const request = orgStore.getAll();
+    request.onsuccess = () => resolve(request.result || []);
+    request.onerror = () => reject(request.error);
+  });
+
+  const devices = await new Promise((resolve, reject) => {
+    const request = deviceStore.getAll();
+    request.onsuccess = () => resolve(request.result || []);
+    request.onerror = () => reject(request.error);
+  });
+
+  // Convert orgs array to object keyed by orgId
+  const orgsObj = {};
+  orgsArray.forEach(org => {
+    orgsObj[org.orgId] = {
+      orgName: org.orgName,
+      devices: devices.filter(d => d.orgId === org.orgId)
+    };
+  });
+
+  return { data: orgsObj };
+}
+// -------------------------
+// Fetch Devices API
+// -------------------------
+async function fetchDevicesWithAuth() {
+  function getCookie(name) {
+    return document.cookie
+      .split("; ")
+      .find(row => row.startsWith(name + "="))
+      ?.split("=")[1];
+  }
+
+  const token = getCookie("session_id");
+  if (!token) {
+    console.error("No session_id cookie found!");
+    return;
+  }
+
+  let delta_ts = localStorage.getItem("delta_ts");
+
+  try {
+    let url = "https://atlasapi.t2k.group/fetch/devices";
+    if (delta_ts) url += `?timestamp=${encodeURIComponent(delta_ts)}`;
+
+    const response = await fetch(url, {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json"
+      }
+    });
+
+    if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+    const data = await response.json();
+
+    if (data?.data?.fetch_ts) localStorage.setItem("delta_ts", data.data.fetch_ts);
+
+    // Save to IndexedDB
+    await saveDevicesToDB(data);
+
+    return data;
+
+  } catch (err) {
+    console.error("Error fetching devices:", err);
+  }
+}
+
+// -------------------------
+// Utility Functions
+// -------------------------
 function timeAgo(timestamp) {
   const now = new Date();
   const past = new Date(timestamp);
   const seconds = Math.floor((now - past) / 1000);
-
   if (seconds < 60) return `${seconds} seconds ago`;
-
   const minutes = Math.floor(seconds / 60);
   if (minutes < 60) return `${minutes} minute${minutes !== 1 ? "s" : ""} ago`;
-
   const hours = Math.floor(minutes / 60);
   if (hours < 24) return `${hours} hour${hours !== 1 ? "s" : ""} ago`;
-
   const days = Math.floor(hours / 24);
   return `${days} day${days !== 1 ? "s" : ""} ago`;
 }
 
+function formatTimeToEmpty(tte) {
+  if (!tte) return null;
+  const date = new Date(tte);
+  if (isNaN(date)) return tte;
+  const hours = String(date.getHours()).padStart(2, "0");
+  const minutes = String(date.getMinutes()).padStart(2, "0");
+  const dayName = date.toLocaleDateString("en-GB", { weekday: "short" });
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = String(date.getFullYear()).slice(-2);
+  return `${hours}:${minutes} ${dayName} ${day}/${month}/${year}`;
+}
 
+// -------------------------
+// Render Devices Table
+// -------------------------
 function renderDevices(devicesData) {
   const container = document.getElementById("devices-container");
   container.innerHTML = "";
-
-  const orgs = devicesData.data;
+  const { fetch_ts, ...orgs } = devicesData.data;
 
   const batteryIcons = {
     full: { icon: "fa-battery-full", color: "text-success" },
@@ -71,7 +174,6 @@ function renderDevices(devicesData) {
 
   for (const orgId in orgs) {
     const org = orgs[orgId];
-
     const orgTitle = document.createElement("h4");
     orgTitle.className = "mb-3 mt-4 fw-semibold";
     orgTitle.textContent = org.orgName || "Unknown Organisation";
@@ -81,8 +183,6 @@ function renderDevices(devicesData) {
 
     const table = document.createElement("table");
     table.className = "devices-table table table-hover align-middle";
-
-    // Keep a reference to sort state
     const sortState = { key: null, asc: true };
 
     table.innerHTML = `
@@ -96,7 +196,6 @@ function renderDevices(devicesData) {
       </thead>
       <tbody></tbody>
     `;
-
     const tbody = table.querySelector("tbody");
 
     function renderRows(devices) {
@@ -108,9 +207,8 @@ function renderDevices(devicesData) {
 
         let batteryDisplay = "—";
         if (device.battPercent != null) {
-          if (typeof device.battPercent === "number") {
-            batteryDisplay = `<strong>${device.battPercent}%</strong>`;
-          } else {
+          if (typeof device.battPercent === "number") batteryDisplay = `<strong>${device.battPercent}%</strong>`;
+          else {
             const icon = batteryIcons[device.battPercent.toLowerCase()] || batteryIcons.crit;
             batteryDisplay = `<i class="fa-solid ${icon.icon} ${icon.color}"></i>`;
           }
@@ -121,10 +219,7 @@ function renderDevices(devicesData) {
           <td>${batteryDisplay}</td>
           <td>${device.lastSeen ? timeAgo(device.lastSeen) : "—"}</td>
           <td class="text-end">
-            <button 
-              class="expand-btn btn btn-sm btn-outline-secondary"
-              title="Details"
-              aria-label="Details">
+            <button class="expand-btn btn btn-sm btn-outline-secondary" title="Details">
               <i class="fa-solid fa-chart-line"></i>
             </button>
           </td>
@@ -132,24 +227,17 @@ function renderDevices(devicesData) {
 
         const detailsRow = document.createElement("tr");
         detailsRow.className = "device-details";
-        detailsRow.innerHTML = `
-          <td colspan="4">
-            <div class="details-content"></div>
-          </td>
-        `;
+        detailsRow.innerHTML = `<td colspan="4"><div class="details-content"></div></td>`;
 
         const detailsContent = detailsRow.querySelector(".details-content");
 
         function toggleRow() {
           const isOpen = mainRow.classList.contains("open");
-
           document.querySelectorAll(".device-row.open").forEach(row => {
             row.classList.remove("open");
             row.nextElementSibling.classList.remove("open");
           });
-
           if (isOpen) return;
-
           mainRow.classList.add("open");
           detailsRow.classList.add("open");
 
@@ -257,45 +345,59 @@ function renderDevices(devicesData) {
       renderRows(sorted);
     }
 
-    // Attach sorting
     table.querySelectorAll("th.sortable").forEach(th => {
       th.style.cursor = "pointer";
-      th.addEventListener("click", () => {
-        const key = th.dataset.key;
-        sortDevices(key);
-      });
+      th.addEventListener("click", () => sortDevices(th.dataset.key));
     });
 
-    // Initial render
     renderRows(org.devices);
     container.appendChild(table);
   }
 }
 
-function formatTimeToEmpty(tte) {
-  if (!tte) return null;
-
-  const date = new Date(tte);
-  if (isNaN(date)) return tte; // fallback if invalid
-
-  const hours = String(date.getHours()).padStart(2, "0");
-  const minutes = String(date.getMinutes()).padStart(2, "0");
-  const dayName = date.toLocaleDateString("en-GB", { weekday: "short" }); // Mon, Tue, etc.
-  const day = String(date.getDate()).padStart(2, "0");
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const year = String(date.getFullYear()).slice(-2);
-
-  return `${hours}:${minutes} ${dayName} ${day}/${month}/${year}`;
-}
-  
-  
-  
-async function init() {
-  const devicesData = await fetchDevicesWithAuth();
-  if (devicesData) {
-    renderDevices(devicesData);
+// -------------------------
+// Poll devices from API every 10 seconds
+// -------------------------
+function startDeviceFetchPolling() {
+  async function poll() {
+    try {
+      const freshData = await fetchDevicesWithAuth(); // your existing API fetch
+      if (freshData) {
+        console.log("Devices fetched at", new Date().toLocaleTimeString());
+        // IndexedDB update is already handled inside fetchDevicesWithAuth
+      }
+    } catch (err) {
+      console.error("Error fetching devices:", err);
+    }
   }
+
+  // Initial fetch immediately
+  poll();
+
+  // Then repeat every 10 seconds
+  const intervalId = setInterval(poll, 10000);
+
+  return intervalId; // in case you want to stop polling later
 }
 
-// Call it
+// -------------------------
+// Init Function
+// -------------------------
+async function init() {
+  // 1️⃣ Load cached devices instantly
+  const cached = await getDevicesFromDB();
+  renderDevices(cached);
+
+  // 2️⃣ Fetch latest data and update IndexedDB
+  const fresh = await fetchDevicesWithAuth();
+  if (fresh) {
+    const updated = await getDevicesFromDB();
+    renderDevices(updated);
+  }
+
+  startDeviceFetchPolling()
+
+}
+
+// Run
 init();

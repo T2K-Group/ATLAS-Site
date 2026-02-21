@@ -37,44 +37,9 @@ document.addEventListener("DOMContentLoaded", function () {
     initMap(layerControl, overlayMaps);
 });
 
-async function fetchDevicesWithAuth() {
-    // Helper to read cookies
-    function getCookie(name) {
-      return document.cookie
-        .split("; ")
-        .find(row => row.startsWith(name + "="))
-        ?.split("=")[1];
-    }
-  
-    const token = getCookie("session_id");
-  
-    if (!token) {
-      console.error("No session_id cookie found!");
-      return;
-    }
-  
-    try {
-      const response = await fetch("https://atlasapi.t2k.group/fetch/devices", {
-        method: "GET",
-        headers: {
-          "Authorization": `Bearer ${token}`,
-          "Content-Type": "application/json"
-        }
-      });
-  
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-  
-      const data = await response.json();
-      return data
-  
-    } catch (err) {
-      console.error("Error fetching devices:", err);
-    }
-  }
 
-  const orgLayers = {}; // store LayerGroups by org name
+
+const orgLayers = {}; // store LayerGroups by org name
 
 function renderOrgLayers(orgs) {
 const orgControlDiv = document.createElement("div");
@@ -250,53 +215,107 @@ function renderSitesPerOrg(sitesData, layerControl) {
       layerControl.addOverlay(sitesLayer, `${orgName} – Sites`);
     }
   }
-  
-async function initMap(layerControl, overlayMaps) {
-      const devicesData = await fetchDevicesWithAuth();
-      if (!devicesData || !devicesData.data) return;
-    
-      const allMarkers = [];
-    
-      // -------- DEVICES (unchanged logic) --------
-      for (const orgId in devicesData.data) {
-        const org = devicesData.data[orgId];
-        const orgName = org.orgName || `Org ${orgId}`;
-    
-        const layerGroup = L.layerGroup();
-    
-        org.devices.forEach(device => {
-          if (device.lat == null || device.lon == null) return;
-    
-          const marker = L.marker([device.lat, device.lon]);
-          marker.bindPopup(
-            `<strong>${device.name || "Device"}</strong><br>` +
-            `Battery: ${device.battPercent ?? "N/A"}<br>` +
-            `Last Seen: ${new Date(device.lastSeen).toLocaleString()}`
-          );
-    
-          layerGroup.addLayer(marker);
-          allMarkers.push(marker);
-    
-          if (device.acc != null) {
-            L.circle([device.lat, device.lon], {
-              radius: device.acc,
-              color: "blue",
-              fillColor: "#3f51b5",
-              fillOpacity: 0.2
-            }).addTo(layerGroup);
-          }
-        });
-    
-        layerGroup.addTo(map);
-        overlayMaps[orgName] = layerGroup;
-        layerControl.addOverlay(layerGroup, orgName);
-      }
-    
-      fitMapToVisibleMarkers(allMarkers);
-    
-      // -------- SITES --------
-      const sitesData = await fetchSitesWithAuth();
-      renderSitesPerOrg(sitesData, layerControl);
 
-    }
-    
+  // -------------------------
+// IndexedDB helper (same DB as fetchDevices.js)
+// -------------------------
+async function openDB() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open("DevicesDB", 1);
+    request.onupgradeneeded = event => {
+      const db = event.target.result;
+      if (!db.objectStoreNames.contains("orgs")) db.createObjectStore("orgs", { keyPath: "orgId" });
+      if (!db.objectStoreNames.contains("devices")) {
+        const store = db.createObjectStore("devices", { keyPath: "name" });
+        store.createIndex("orgId", "orgId", { unique: false });
+      }
+    };
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+// -------------------------
+// Get devices from IndexedDB
+// -------------------------
+async function getDevicesFromDB() {
+  const db = await openDB();
+  const tx = db.transaction(["orgs", "devices"], "readonly");
+  const orgStore = tx.objectStore("orgs");
+  const deviceStore = tx.objectStore("devices");
+
+  const orgsArray = await new Promise((resolve, reject) => {
+    const req = orgStore.getAll();
+    req.onsuccess = () => resolve(req.result || []);
+    req.onerror = () => reject(req.error);
+  });
+
+  const devices = await new Promise((resolve, reject) => {
+    const req = deviceStore.getAll();
+    req.onsuccess = () => resolve(req.result || []);
+    req.onerror = () => reject(req.error);
+  });
+
+  const orgsObj = {};
+  orgsArray.forEach(org => {
+    orgsObj[org.orgId] = {
+      orgName: org.orgName,
+      devices: devices.filter(d => d.orgId === org.orgId)
+    };
+  });
+
+  return orgsObj;
+}
+
+// -------------------------
+// Map initialization using IndexedDB devices
+// -------------------------
+async function initMap(layerControl, overlayMaps) {
+  // 1️⃣ Load devices from IndexedDB
+  const orgs = await getDevicesFromDB();
+
+  if (!orgs) return;
+  const allMarkers = [];
+
+  for (const orgId in orgs) {
+    const org = orgs[orgId];
+    const orgName = org.orgName || `Org ${orgId}`;
+
+    // Create LayerGroup for this org
+    const layerGroup = L.layerGroup();
+
+    org.devices.forEach(device => {
+      if (device.lat == null || device.lon == null) return;
+
+      const marker = L.marker([device.lat, device.lon]);
+      marker.bindPopup(
+        `<strong>${device.name || "Device"}</strong><br>` +
+        `Battery: ${device.battPercent ?? "N/A"}<br>` +
+        `Last Seen: ${new Date(device.lastSeen).toLocaleString()}`
+      );
+      layerGroup.addLayer(marker);
+      allMarkers.push(marker);
+
+      if (device.acc != null) {
+        L.circle([device.lat, device.lon], {
+          radius: device.acc,
+          color: "blue",
+          fillColor: "#3f51b5",
+          fillOpacity: 0.2
+        }).addTo(layerGroup);
+      }
+    });
+
+    layerGroup.addTo(map);
+    overlayMaps[orgName] = layerGroup;
+    layerControl.addOverlay(layerGroup, orgName);
+  }
+
+  fitMapToVisibleMarkers(allMarkers);
+
+  // 2️⃣ Sites remain unchanged
+  const sitesData = await fetchSitesWithAuth();
+  renderSitesPerOrg(sitesData, layerControl);
+}
+
+initMap(layerControl, overlayMaps)
