@@ -200,123 +200,101 @@ function renderDevices(devicesData) {
 
     function renderRows(devices) {
       tbody.innerHTML = "";
+      const fragment = document.createDocumentFragment();
+    
       devices.forEach(device => {
+        // Main row
         const mainRow = document.createElement("tr");
         mainRow.className = "device-row";
         mainRow.style.cursor = "pointer";
-
-        let batteryDisplay = "—";
-        if (device.battPercent != null) {
-          if (typeof device.battPercent === "number") batteryDisplay = `<strong>${device.battPercent}%</strong>`;
-          else {
-            const icon = batteryIcons[device.battPercent.toLowerCase()] || batteryIcons.crit;
-            batteryDisplay = `<i class="fa-solid ${icon.icon} ${icon.color}"></i>`;
-          }
-        }
-
         mainRow.innerHTML = `
-          <td class="fw-medium">${device.name || "Unnamed Device"}</td>
-          <td>${batteryDisplay}</td>
+          <td>${device.name || "Unnamed Device"}</td>
+          <td>${device.battPercent != null ? device.battPercent + "%" : "—"}</td>
           <td>${device.lastSeen ? timeAgo(device.lastSeen) : "—"}</td>
-          <td class="text-end">
-            <button class="expand-btn btn btn-sm btn-outline-secondary" title="Details">
-              <i class="fa-solid fa-chart-line"></i>
-            </button>
-          </td>
+          <td><button class="expand-btn btn btn-sm btn-outline-secondary"><i class="fa-solid fa-chart-line"></i></button></td>
         `;
-
+        fragment.appendChild(mainRow);
+    
+        // Details row (lazy)
         const detailsRow = document.createElement("tr");
         detailsRow.className = "device-details";
         detailsRow.innerHTML = `<td colspan="4"><div class="details-content"></div></td>`;
-
+        fragment.appendChild(detailsRow);
+    
         const detailsContent = detailsRow.querySelector(".details-content");
-
+    
+        // Lazy load details on first click
         function toggleRow() {
           const isOpen = mainRow.classList.contains("open");
+    
+          // Close any other open rows
           document.querySelectorAll(".device-row.open").forEach(row => {
             row.classList.remove("open");
             row.nextElementSibling.classList.remove("open");
           });
+    
           if (isOpen) return;
+    
           mainRow.classList.add("open");
           detailsRow.classList.add("open");
-
+    
+          // Only populate details once
           if (!detailsContent.dataset.loaded) {
             const wrapper = document.createElement("div");
             wrapper.className = "details-wrapper";
-
-            if (device.lat && device.lon) {
+    
+            if (device.lat != null && device.lon != null) {
               const mapImg = document.createElement("img");
               mapImg.src = `https://maps.t2k.group?lat=${device.lat}&lon=${device.lon}&zoom=17&size=1000x600&radius=${device.acc}&shape=circle`;
               mapImg.className = "details-map";
               wrapper.appendChild(mapImg);
             }
-
+    
             const infoContainer = document.createElement("div");
             infoContainer.className = "details-info";
-
-            function createSection(title, iconClass) {
-              const section = document.createElement("div");
-              section.className = "detail-section";
-              section.innerHTML = `
-                <div class="section-header">
-                  <i class="fa-solid ${iconClass}"></i>
-                  <span>${title}</span>
-                </div>
-                <div class="section-body"></div>
-              `;
-              return section;
-            }
-
-            function addItem(section, label, value, icon) {
-              if (value == null) return;
-              const body = section.querySelector(".section-body");
-              const row = document.createElement("div");
-              row.className = "detail-item";
-              row.innerHTML = `<i class="fa-solid ${icon}"></i><span class="detail-label">${label}</span><span class="detail-value">${value}</span>`;
-              body.appendChild(row);
-            }
-
-            const locationSection = createSection("Location", "fa-location-dot");
-            addItem(locationSection, "Latitude", device.lat, "fa-globe");
-            addItem(locationSection, "Longitude", device.lon, "fa-globe");
-            addItem(locationSection, "Accuracy", device.acc, "fa-crosshairs");
+    
+            // Example: Location section
+            const locationSection = document.createElement("div");
+            locationSection.className = "detail-section";
+            locationSection.innerHTML = `
+              <div class="section-header"><i class="fa-solid fa-location-dot"></i> Location</div>
+              <div class="section-body">
+                <div class="detail-item"><i class="fa-solid fa-globe"></i> Latitude: ${device.lat ?? "—"}</div>
+                <div class="detail-item"><i class="fa-solid fa-globe"></i> Longitude: ${device.lon ?? "—"}</div>
+                <div class="detail-item"><i class="fa-solid fa-crosshairs"></i> Accuracy: ${device.acc ?? "—"}</div>
+              </div>
+            `;
             infoContainer.appendChild(locationSection);
-
-            if (device.battVoltage || device.battTemp || device.battCurrentDraw || device.battTTE) {
-              const batterySection = createSection("Battery", "fa-battery-full");
-              addItem(batterySection, "Voltage", device.battVoltage + " V", "fa-bolt");
-              addItem(batterySection, "Temperature", device.battTemp + " °C", "fa-temperature-half");
-              addItem(batterySection, "Current Draw", device.battCurrentDraw + " A", "fa-gauge");
-              addItem(batterySection,"Time To Empty",formatTimeToEmpty(device.battTTE),"fa-clock");
+    
+            // Battery section (example)
+            if (device.battVoltage || device.battTemp || device.battCurrentDraw) {
+              const batterySection = document.createElement("div");
+              batterySection.className = "detail-section";
+              batterySection.innerHTML = `
+                <div class="section-header"><i class="fa-solid fa-battery-full"></i> Battery</div>
+                <div class="section-body">
+                  ${device.battVoltage ? `<div class="detail-item"><i class="fa-solid fa-bolt"></i> Voltage: ${device.battVoltage} V</div>` : ""}
+                  ${device.battTemp ? `<div class="detail-item"><i class="fa-solid fa-temperature-half"></i> Temp: ${device.battTemp} °C</div>` : ""}
+                  ${device.battCurrentDraw ? `<div class="detail-item"><i class="fa-solid fa-gauge"></i> Current: ${device.battCurrentDraw} A</div>` : ""}
+                </div>
+              `;
               infoContainer.appendChild(batterySection);
             }
-
-            if (device.mmc || device.mnc || device.tac || device.band || device.cellId) {
-              const cellSection = createSection("Cell Network", "fa-tower-cell");
-              addItem(cellSection, "MMC", device.mmc, "fa-sim-card");
-              addItem(cellSection, "MNC", device.mnc, "fa-sim-card");
-              addItem(cellSection, "TAC", device.tac, "fa-broadcast-tower");
-              addItem(cellSection, "Band", device.band, "fa-wave-square");
-              addItem(cellSection, "Cell ID", device.cellId, "fa-circle-nodes");
-              infoContainer.appendChild(cellSection);
-            }
-
+    
             wrapper.appendChild(infoContainer);
             detailsContent.appendChild(wrapper);
             detailsContent.dataset.loaded = "true";
           }
         }
-
+    
         mainRow.addEventListener("click", toggleRow);
         mainRow.querySelector(".expand-btn").addEventListener("click", e => {
           e.stopPropagation();
           toggleRow();
         });
-
-        tbody.appendChild(mainRow);
-        tbody.appendChild(detailsRow);
       });
+    
+      tbody.appendChild(fragment);
     }
 
     function sortDevices(key) {
