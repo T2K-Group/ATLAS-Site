@@ -358,23 +358,47 @@ function startDeviceFetchPolling() {
   return intervalId; // in case you want to stop polling later
 }
 
+const searchInput = document.getElementById("device-search");
+
+let cachedDevicesData = null; // store the full device list
+
+searchInput.addEventListener("input", () => {
+  if (!cachedDevicesData) return;
+
+  const query = searchInput.value.toLowerCase();
+
+  // Filter each org's devices
+  const filteredData = { data: {} };
+  for (const orgId in cachedDevicesData.data) {
+    const org = cachedDevicesData.data[orgId];
+    const filteredDevices = org.devices.filter(device =>
+      device.name?.toLowerCase().includes(query)
+    );
+
+    filteredData.data[orgId] = {
+      orgName: org.orgName,
+      devices: filteredDevices
+    };
+  }
+
+  renderDevices(filteredData);
+});
+
 // -------------------------
 // Init Function
 // -------------------------
 async function init() {
-  // 1️⃣ Load cached devices instantly
   const cached = await getDevicesFromDB();
+  cachedDevicesData = cached; // cache it for searching
   renderDevices(cached);
 
-  // 2️⃣ Fetch latest data and update IndexedDB
   const fresh = await fetchDevicesWithAuth();
   if (fresh) {
-    const updated = await getDevicesFromDB();
-    renderDevices(updated);
+    cachedDevicesData = await getDevicesFromDB(); // update cache
+    renderDevices(cachedDevicesData);
   }
 
-  startDeviceFetchPolling()
-
+  startDeviceFetchPolling(); // keep fetching every 10s
 }
 
 // Run
