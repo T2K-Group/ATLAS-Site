@@ -99,6 +99,7 @@ async function fetchDevicesWithAuth() {
   }
 
   let delta_ts = localStorage.getItem("delta_ts");
+  delta_ts = 0 // temp fix as something is wrong with sys
 
   try {
     let url = "https://atlasapi.t2k.group/fetch/devices";
