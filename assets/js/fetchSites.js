@@ -127,8 +127,6 @@ function renderSitesTable(apiResponse) {
                     <div id="map-${site.id}" style="height:400px;"></div>
 
                     <div class="mt-3 d-flex gap-3 align-items-center">
-                        <label>Radius (m):</label>
-                        <input type="number" class="form-control radius-input" value="${site.radius}" style="width:120px;">
                         <button class="btn btn-success save-btn">Save</button>
                         <button class="btn ${toggleBtnClass} toggle-active-btn">
                             ${toggleBtnLabel}
