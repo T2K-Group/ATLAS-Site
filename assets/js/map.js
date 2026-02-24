@@ -204,7 +204,7 @@ function renderSitesPerOrg(sitesData, layerControl) {
             }
         });
 
-        // 🔑 INSERT HEADER *BEFORE* FIRST SITE OVERLAY
+        
         if (!headerInserted) {
             addLayerControlHeader("Sites");
             headerInserted = true;
