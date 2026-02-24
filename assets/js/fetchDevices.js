@@ -144,6 +144,25 @@ function timeAgo(timestamp) {
   return `${days} day${days !== 1 ? "s" : ""} ago`;
 }
 
+function timeTo(timestamp) {
+  const now = new Date();
+  const future = new Date(timestamp);
+  const seconds = Math.floor((future - now) / 1000);
+
+  if (seconds <= 0) return "now";
+
+  if (seconds < 60) return `in ${seconds} second${seconds !== 1 ? "s" : ""}`;
+  
+  const minutes = Math.floor(seconds / 60);
+  if (minutes < 60) return `in ${minutes} minute${minutes !== 1 ? "s" : ""}`;
+  
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `in ${hours} hour${hours !== 1 ? "s" : ""}`;
+  
+  const days = Math.floor(hours / 24);
+  return `in ${days} day${days !== 1 ? "s" : ""}`;
+}
+
 function formatTimeToEmpty(tte) {
   if (!tte) return null;
   const date = new Date(tte);
@@ -292,7 +311,7 @@ if (device.battVoltage || device.battTemp || device.battCurrentDraw || device.ba
 
       ${device.battTTE ? 
         `<div class="detail-item">
-          <i class="fa-solid fa-clock"></i> Time to Empty: ${device.battTTE}
+          <i class="fa-solid fa-clock"></i> Time to Empty: ${timeTo(device.battTTE)}
         </div>` : ""}
     </div>
   `;
@@ -300,7 +319,7 @@ if (device.battVoltage || device.battTemp || device.battCurrentDraw || device.ba
 }
 
 
-if (device.cellId || device.mnc || device.mcc || device.tac) {
+if (device.cellId || device.mnc || device.mmc || device.tac) {
   const cellSection = document.createElement("div");
   cellSection.className = "detail-section";
   cellSection.innerHTML = `
@@ -309,14 +328,9 @@ if (device.cellId || device.mnc || device.mcc || device.tac) {
     </div>
     <div class="section-body">
 
-      ${device.mcc ? 
+      ${device.mmc ? 
         `<div class="detail-item">
-          <i class="fa-solid fa-globe"></i> MCC: ${device.mcc}
-        </div>` : ""}
-
-      ${device.mnc ? 
-        `<div class="detail-item">
-          <i class="fa-solid fa-signal"></i> MNC: ${device.mnc}
+          <i class="fa-solid fa-globe"></i> MMC & MNC: ${device.mmc}${device.mnc}
         </div>` : ""}
 
       ${device.tac ? 
