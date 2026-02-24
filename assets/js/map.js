@@ -33,7 +33,6 @@ document.addEventListener("DOMContentLoaded", function () {
     const toggle = document.getElementById("sidepanel-toggler");
     toggle?.addEventListener("click", () => setTimeout(() => map.invalidateSize(), 300));
 
-    // ✅ Move initMap call here
     initMap(layerControl, overlayMaps);
 });
 
@@ -312,7 +311,6 @@ async function initMap(layerControl, overlayMaps) {
 
   fitMapToVisibleMarkers(allMarkers);
 
-  // 2️⃣ Sites remain unchanged
   const sitesData = await fetchSitesWithAuth();
   renderSitesPerOrg(sitesData, layerControl);
 }

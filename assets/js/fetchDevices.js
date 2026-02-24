@@ -267,20 +267,72 @@ function renderDevices(devicesData) {
             `;
             infoContainer.appendChild(locationSection);
     
-            // Battery section (example)
-            if (device.battVoltage || device.battTemp || device.battCurrentDraw) {
-              const batterySection = document.createElement("div");
-              batterySection.className = "detail-section";
-              batterySection.innerHTML = `
-                <div class="section-header"><i class="fa-solid fa-battery-full"></i> Battery</div>
-                <div class="section-body">
-                  ${device.battVoltage ? `<div class="detail-item"><i class="fa-solid fa-bolt"></i> Voltage: ${device.battVoltage} V</div>` : ""}
-                  ${device.battTemp ? `<div class="detail-item"><i class="fa-solid fa-temperature-half"></i> Temp: ${device.battTemp} °C</div>` : ""}
-                  ${device.battCurrentDraw ? `<div class="detail-item"><i class="fa-solid fa-gauge"></i> Current: ${device.battCurrentDraw} A</div>` : ""}
-                </div>
-              `;
-              infoContainer.appendChild(batterySection);
-            }
+if (device.battVoltage || device.battTemp || device.battCurrentDraw || device.battTTE) {
+  const batterySection = document.createElement("div");
+  batterySection.className = "detail-section";
+  batterySection.innerHTML = `
+    <div class="section-header">
+      <i class="fa-solid fa-battery-full"></i> Battery
+    </div>
+    <div class="section-body">
+      ${device.battVoltage ? 
+        `<div class="detail-item">
+          <i class="fa-solid fa-bolt"></i> Voltage: ${device.battVoltage} V
+        </div>` : ""}
+
+      ${device.battTemp ? 
+        `<div class="detail-item">
+          <i class="fa-solid fa-temperature-half"></i> Temp: ${device.battTemp} °C
+        </div>` : ""}
+
+      ${device.battCurrentDraw ? 
+        `<div class="detail-item">
+          <i class="fa-solid fa-gauge"></i> Current: ${device.battCurrentDraw} A
+        </div>` : ""}
+
+      ${device.battTTE ? 
+        `<div class="detail-item">
+          <i class="fa-solid fa-clock"></i> Time to Empty: ${device.battTTE}
+        </div>` : ""}
+    </div>
+  `;
+  infoContainer.appendChild(batterySection);
+}
+
+
+if (device.cellId || device.mnc || device.mcc || device.tac) {
+  const cellSection = document.createElement("div");
+  cellSection.className = "detail-section";
+  cellSection.innerHTML = `
+    <div class="section-header">
+      <i class="fa-solid fa-tower-cell"></i> Cell Information
+    </div>
+    <div class="section-body">
+
+      ${device.mcc ? 
+        `<div class="detail-item">
+          <i class="fa-solid fa-globe"></i> MCC: ${device.mcc}
+        </div>` : ""}
+
+      ${device.mnc ? 
+        `<div class="detail-item">
+          <i class="fa-solid fa-signal"></i> MNC: ${device.mnc}
+        </div>` : ""}
+
+      ${device.tac ? 
+        `<div class="detail-item">
+          <i class="fa-solid fa-map-location-dot"></i> TAC: ${device.tac}
+        </div>` : ""}
+
+      ${device.cellId ? 
+        `<div class="detail-item">
+          <i class="fa-solid fa-broadcast-tower"></i> Cell ID: ${device.cellId}
+        </div>` : ""}
+        
+    </div>
+  `;
+  infoContainer.appendChild(cellSection);
+}
     
             wrapper.appendChild(infoContainer);
             detailsContent.appendChild(wrapper);
