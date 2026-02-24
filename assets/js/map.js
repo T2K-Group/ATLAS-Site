@@ -33,7 +33,7 @@ document.addEventListener("DOMContentLoaded", function () {
     const toggle = document.getElementById("sidepanel-toggler");
     toggle?.addEventListener("click", () => setTimeout(() => map.invalidateSize(), 300));
 
-    // Load devices and add org layers
+    // ✅ Move initMap call here
     initMap(layerControl, overlayMaps);
 });
 
@@ -163,58 +163,57 @@ async function fetchSitesWithAuth() {
     
 function renderSitesPerOrg(sitesData, layerControl) {
     if (!sitesData || !sitesData.data) return;
-  
+
     let headerInserted = false;
-  
+
     for (const orgId in sitesData.data) {
-      const org = sitesData.data[orgId];
-      const orgName = org.org_name || `Org ${orgId}`;
+        const org = sitesData.data[orgId];
+        const orgName = org.org_name || `Org ${orgId}`;
 
+        const sitesLayer = L.layerGroup();
+        orgSiteLayers[orgName] = sitesLayer;
 
-      const sitesLayer = L.layerGroup();
-      orgSiteLayers[orgName] = sitesLayer;
-  
-      org.sites.forEach(site => {
+        org.sites.forEach(site => {
+            // Skip inactive sites
+            if (!site.active) return;
 
+            // Use centroid for marker
+            const lat = site.centroid_lat;
+            const lon = site.centroid_lon;
 
+            if (lat == null || lon == null) return;
 
-        if (site.lat == null || site.lon == null || site.active == 0) return;
-  
-        const marker = L.circleMarker([site.lat, site.lon], {
-          radius: 8,
-          color: site.hq ? "#00695c" : "#DC143C",
-          fillColor: site.hq ? "#26a69a" : "#DC143C",
-          fillOpacity: 0.9
+            // Draw polygon if polygon_points exist
+            if (Array.isArray(site.polygon_points) && site.polygon_points.length > 2) {
+                const latlngs = site.polygon_points.map(p => [p.lat, p.lon]);
+                const polygon = L.polygon(latlngs, {
+                    color: site.hq ? "#26a69a" : "#DC143C",
+                    fillOpacity: 0.1
+                });
+                sitesLayer.addLayer(polygon);
+            }
+
+            // Draw circle for radius if provided
+            if (site.radius) {
+                const circle = L.circle([lat, lon], {
+                    radius: site.radius,
+                    color: site.hq ? "#26a69a" : "#DC143C",
+                    fillOpacity: 0.05
+                });
+                sitesLayer.addLayer(circle);
+            }
         });
-  
-        marker.bindPopup(`
-          <strong>${site.name}</strong><br>
-          ${site.address}<br>
-          Radius: ${site.radius}m<br>
-          ${site.active ? "Active" : "Inactive"}
-        `);
-  
-        sitesLayer.addLayer(marker);
-  
-        if (site.radius) {
-          L.circle([site.lat, site.lon], {
-            radius: site.radius,
-            color: site.hq ? "#26a69a" : "#DC143C",
-            fillOpacity: 0.1
-          }).addTo(sitesLayer);
+
+        // 🔑 INSERT HEADER *BEFORE* FIRST SITE OVERLAY
+        if (!headerInserted) {
+            addLayerControlHeader("Sites");
+            headerInserted = true;
         }
-      });
-  
-      // 🔑 INSERT HEADER *BEFORE* FIRST SITE OVERLAY
-      if (!headerInserted) {
-        addLayerControlHeader("Sites");
-        headerInserted = true;
-      }
-  
-      sitesLayer.addTo(map);
-      layerControl.addOverlay(sitesLayer, `${orgName} – Sites`);
+
+        sitesLayer.addTo(map);
+        layerControl.addOverlay(sitesLayer, `${orgName} – Sites`);
     }
-  }
+}
 
   // -------------------------
 // IndexedDB helper (same DB as fetchDevices.js)
@@ -317,5 +316,3 @@ async function initMap(layerControl, overlayMaps) {
   const sitesData = await fetchSitesWithAuth();
   renderSitesPerOrg(sitesData, layerControl);
 }
-
-initMap(layerControl, overlayMaps)

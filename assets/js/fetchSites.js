@@ -1,4 +1,6 @@
 let addSiteMap, addSiteMarker, addSiteCircle;
+let currentDrawnLayer = null;
+let addSiteDrawnLayer = null;
 
 async function fetchSitesWithAuth() {
     // Helper to read cookies
@@ -171,8 +173,6 @@ function renderSitesTable(apiResponse) {
 
 }
 
-
-
 async function initSites() {
     const sitesData = await fetchSitesWithAuth();
     renderSitesTable(sitesData);
@@ -183,57 +183,80 @@ function initMapEditor(site) {
     const mapId = `map-${site.id}`;
     if (document.getElementById(mapId)._leaflet_id) return;
 
-    const defaultLat = 51.5080; // Trafalgar Square
-    const defaultLon = -0.1281;
-
-    const lat = site.lat || defaultLat;  // fallback coords
-    const lng = site.lon || defaultLon;
-
-    const map = L.map(mapId).setView([lat, lng], 15);
+    const map = L.map(mapId).setView([51.5080, -0.1281], 15);
 
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         attribution: "© OpenStreetMap contributors"
     }).addTo(map);
 
-    const marker = L.marker([lat, lng], { draggable: true }).addTo(map);
+    // Leaflet Draw setup
+    const drawnItems = new L.FeatureGroup();
+    map.addLayer(drawnItems);
 
-    let circle = L.circle([lat, lng], {
-        radius: site.radius,
-        color: "blue",
-        fillOpacity: 0.2
-    }).addTo(map);
+    const drawControl = new L.Control.Draw({
+        draw: {
+            polygon: true,
+            polyline: false,
+            rectangle: false,
+            circle: false,
+            circlemarker: false,
+            marker: false
+        },
+        edit: {
+            featureGroup: drawnItems,
+            remove: true
+        }
+    });
 
-    // Update circle when marker moves
-    marker.on("drag", function (e) {
-        circle.setLatLng(e.latlng);
+    map.addControl(drawControl);
+
+    // Load existing polygon if present
+    if (site.polygon_points && site.polygon_points.length >= 3) {
+        const latlngs = site.polygon_points.map(p => [p.lat, p.lon]);
+        currentDrawnLayer = L.polygon(latlngs, { color: "blue", fillOpacity: 0.2 }).addTo(drawnItems);
+        map.fitBounds(currentDrawnLayer.getBounds());
+    }
+
+    map.on(L.Draw.Event.CREATED, function (e) {
+        if (currentDrawnLayer) drawnItems.removeLayer(currentDrawnLayer);
+
+        const layer = e.layer;
+        currentDrawnLayer = layer;
+        drawnItems.addLayer(layer);
+    });
+
+    map.on(L.Draw.Event.EDITED, function (e) {
+        // Only one layer, keep track
+        currentDrawnLayer = e.layers.getLayers()[0] || currentDrawnLayer;
+    });
+
+    map.on(L.Draw.Event.DELETED, function (e) {
+        currentDrawnLayer = null;
     });
 
     const container = document.getElementById(mapId).closest("td");
-    const radiusInput = container.querySelector(".radius-input");
     const saveBtn = container.querySelector(".save-btn");
     const toggleBtn = container.querySelector(".toggle-active-btn");
 
-    // Grab new text inputs
     const nameInput = container.querySelector(".site-name");
     const addressInput = container.querySelector(".site-address");
     const postcodeInput = container.querySelector(".site-postcode");
 
-    // Live radius update
-    radiusInput.addEventListener("input", () => {
-        const newRadius = parseInt(radiusInput.value) || 0;
-        circle.setRadius(newRadius);
-    });
-
     // Save button
     saveBtn.addEventListener("click", async () => {
+
+        if (!currentDrawnLayer) {
+            alert("Please draw a polygon before saving.");
+            return;
+        }
+
+        const latlngs = currentDrawnLayer.getLatLngs()[0].map(p => ({ lat: p.lat, lon: p.lng }));
 
         const updatedData = {
             name: nameInput.value,
             address: addressInput.value,
             postcode: postcodeInput.value,
-            lat: marker.getLatLng().lat,
-            lon: marker.getLatLng().lng,
-            radius: parseFloat(radiusInput.value),
+            polygon_points: latlngs,
             active: site.active
         };
 
@@ -249,16 +272,11 @@ function initMapEditor(site) {
                     "Authorization": `Bearer ${token}`,
                     "Content-Type": "application/json"
                 },
-                body: JSON.stringify({
-                    [site.id]: updatedData
-                })
+                body: JSON.stringify({ [site.id]: updatedData })
             });
 
             const result = await response.json();
-
-            if (!response.ok || !result.status) {
-                throw new Error(result.message || "Update failed");
-            }
+            if (!response.ok || !result.status) throw new Error(result.message || "Update failed");
 
             showToast("Site updated successfully", "success");
             site.name = updatedData.name;
@@ -272,10 +290,9 @@ function initMapEditor(site) {
         }
     });
 
+    // Toggle active button (unchanged)
     toggleBtn.addEventListener("click", async () => {
-
         const newActiveState = site.active ? 0 : 1;
-        const actionText = newActiveState ? "activate" : "deactivate";
 
         try {
             const token = document.cookie
@@ -294,31 +311,21 @@ function initMapEditor(site) {
                         name: nameInput.value,
                         address: addressInput.value,
                         postcode: postcodeInput.value,
-                        lat: marker.getLatLng().lat,
-                        lon: marker.getLatLng().lng,
-                        radius: parseFloat(radiusInput.value),
+                        polygon_points: currentDrawnLayer
+                            ? currentDrawnLayer.getLatLngs()[0].map(p => ({ lat: p.lat, lon: p.lng }))
+                            : null,
                         active: newActiveState
                     }
                 })
             });
 
             const result = await response.json();
+            if (!response.ok || !result.status) throw new Error(result.message || "Update failed");
 
-            if (!response.ok || !result.status) {
-                throw new Error(result.message || "Update failed");
-            }
-
-            // Update local state
             site.active = newActiveState;
-
-            // Update status badge
             const row = container.closest("tr").previousElementSibling;
             row.querySelector("td:nth-child(2)").innerHTML =
-                newActiveState
-                    ? `<span class="badge bg-success">Active</span>`
-                    : `<span class="badge bg-secondary">Inactive</span>`;
-
-            // Swap button appearance
+                newActiveState ? `<span class="badge bg-success">Active</span>` : `<span class="badge bg-secondary">Inactive</span>`;
             toggleBtn.textContent = newActiveState ? "Deactivate" : "Activate";
             toggleBtn.classList.remove("btn-danger", "btn-success");
             toggleBtn.classList.add(newActiveState ? "btn-danger" : "btn-success");
@@ -331,12 +338,8 @@ function initMapEditor(site) {
         }
     });
 
-
-    setTimeout(() => {
-        map.invalidateSize();
-    }, 200);
+    setTimeout(() => map.invalidateSize(), 200);
 }
-
 
 function openAddSiteModal(orgId, orgName) {
 
@@ -352,61 +355,55 @@ function openAddSiteModal(orgId, orgName) {
     // Initialize map when modal is fully shown
     modalEl.addEventListener("shown.bs.modal", () => {
 
-        const radiusInput = document.getElementById("new-site-radius");
-        const mapDiv = document.getElementById("new-site-map");
+        addSiteMap = L.map("new-site-map").setView([51.5080, -0.1281], 15);
+        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png").addTo(addSiteMap);
 
-        if (!mapDiv || !radiusInput) {
-            console.error("Add site modal map or radius input not found");
-            return;
-        }
+        const drawnItems = new L.FeatureGroup();
+        addSiteMap.addLayer(drawnItems);
 
-        const defaultLat = 51.5080; // Trafalgar Square
-        const defaultLon = -0.1281;
-        const radius = parseFloat(radiusInput.value) || 100;
+        const drawControl = new L.Control.Draw({
+            draw: { polygon: true, polyline: false, rectangle: false, circle: false, circlemarker: false, marker: false },
+            edit: { featureGroup: drawnItems }
+        });
+        addSiteMap.addControl(drawControl);
 
-        // Remove previous map if exists
-        if (addSiteMap) {
-            addSiteMap.remove();
-        }
-
-        addSiteMap = L.map("new-site-map").setView([defaultLat, defaultLon], 15);
-
-        L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-            attribution: "© OpenStreetMap contributors"
-        }).addTo(addSiteMap);
-
-        addSiteMarker = L.marker([defaultLat, defaultLon], { draggable: true }).addTo(addSiteMap);
-
-        addSiteCircle = L.circle([defaultLat, defaultLon], {
-            radius: radius,
-            color: "blue",
-            fillOpacity: 0.2
-        }).addTo(addSiteMap);
-
-        // Update circle when marker moves
-        addSiteMarker.on("drag", (e) => {
-            addSiteCircle.setLatLng(e.latlng);
+        addSiteMap.on(L.Draw.Event.CREATED, function(e) {
+            if (addSiteDrawnLayer) drawnItems.removeLayer(addSiteDrawnLayer);
+            addSiteDrawnLayer = e.layer;
+            drawnItems.addLayer(addSiteDrawnLayer);
         });
 
-        // Update circle radius live
-        radiusInput.addEventListener("input", () => {
-            addSiteCircle.setRadius(parseFloat(radiusInput.value) || 0);
+        addSiteMap.on(L.Draw.Event.EDITED, function(e) {
+            addSiteDrawnLayer = e.layers.getLayers()[0] || addSiteDrawnLayer;
         });
 
-        // Ensure map renders correctly
+        addSiteMap.on(L.Draw.Event.DELETED, function(e) {
+            addSiteDrawnLayer = null;
+        });
+
         setTimeout(() => addSiteMap.invalidateSize(), 200);
+    });
 
-    }, { once: true });
+    // On save
+    const payload = {
+        org_id: parseInt(orgId),
+        name: name,
+        address: address,
+        postcode: postcode,
+        polygon_points: addSiteDrawnLayer
+            ? addSiteDrawnLayer.getLatLngs()[0].map(p => ({ lat: p.lat, lon: p.lng }))
+            : null,
+        active: active
+    };
+
 }
 
 
 document.getElementById("create-site-btn").addEventListener("click", async () => {
-
     const orgId = document.getElementById("new-site-org-id").value;
     const name = document.getElementById("new-site-name").value;
     const address = document.getElementById("new-site-address").value;
     const postcode = document.getElementById("new-site-postcode").value;
-    const radius = parseFloat(document.getElementById("new-site-radius").value) || 100;
     const active = document.getElementById("new-site-active").checked ? 1 : 0;
 
     if (!name || !address || !postcode) {
@@ -414,14 +411,19 @@ document.getElementById("create-site-btn").addEventListener("click", async () =>
         return;
     }
 
+    if (!addSiteDrawnLayer) {
+        alert("Please draw a polygon for the site location before creating.");
+        return;
+    }
+
+    const polygon_points = addSiteDrawnLayer.getLatLngs()[0].map(p => ({ lat: p.lat, lon: p.lng }));
+
     const payload = {
         org_id: parseInt(orgId),
         name: name,
         address: address,
-        postcode: postcode,      // <-- new field
-        lat: addSiteMarker.getLatLng().lat,
-        lon: addSiteMarker.getLatLng().lng,
-        radius: radius,
+        postcode: postcode,
+        polygon_points: polygon_points,
         active: active
     };
 
