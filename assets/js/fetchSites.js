@@ -2,6 +2,20 @@ let addSiteMap, addSiteMarker, addSiteCircle;
 let currentDrawnLayer = null;
 let addSiteDrawnLayer = null;
 
+async function fetchPostcodeLatLon(postcode) {
+    try {
+        const response = await fetch(`https://postcodes.t2k.group/postcode/${encodeURIComponent(postcode)}`);
+
+        if (!response.ok) throw new Error("Postcode lookup failed");
+
+        return await response.json();
+    } catch (err) {
+        console.error(err);
+        showToast("Postcode lookup failed", "danger");
+        return null;
+    }
+}
+
 async function fetchSitesWithAuth() {
     // Helper to read cookies
     function getCookie(name) {
@@ -122,7 +136,12 @@ function renderSitesTable(apiResponse) {
                     </div>
                     <div class="mb-2">
                         <label>Postcode</label>
-                        <input type="text" class="form-control site-postcode" value="${site.postcode || ''}">
+                        <div class="input-group">
+                            <input type="text" class="form-control site-postcode" value="${site.postcode || ''}">
+                            <button class="btn btn-outline-secondary postcode-search-btn" type="button">
+                                Search
+                            </button>
+                        </div>
                     </div>
                     <div id="map-${site.id}" style="height:400px;"></div>
 
@@ -238,7 +257,28 @@ function initMapEditor(site) {
 
     const nameInput = container.querySelector(".site-name");
     const addressInput = container.querySelector(".site-address");
-    const postcodeInput = container.querySelector(".site-postcode");
+    
+    const postcodeSearchBtn = container.querySelector(".postcode-search-btn");
+    let postcodeMarker = null;
+
+    postcodeSearchBtn.addEventListener("click", async () => {
+
+        const postcode = postcodeInput.value.trim();
+        if (!postcode) return;
+
+        const result = await fetchPostcodeLatLon(postcode);
+        if (!result) return;
+
+        const { latitude, longitude } = result;
+
+        map.setView([latitude, longitude], 17);
+
+        if (postcodeMarker) {
+            map.removeLayer(postcodeMarker);
+        }
+
+        postcodeMarker = L.marker([latitude, longitude]).addTo(map);
+    });
 
     // Save button
     saveBtn.addEventListener("click", async () => {
@@ -377,6 +417,29 @@ function openAddSiteModal(orgId, orgName) {
 
         addSiteMap.on(L.Draw.Event.DELETED, function(e) {
             addSiteDrawnLayer = null;
+        });
+
+        const postcodeInput = document.getElementById("new-site-postcode");
+        const postcodeSearchBtn = document.getElementById("new-site-postcode-search");
+        let postcodeMarker = null;
+
+        postcodeSearchBtn.addEventListener("click", async () => {
+
+            const postcode = postcodeInput.value.trim();
+            if (!postcode) return;
+
+            const result = await fetchPostcodeLatLon(postcode);
+            if (!result) return;
+
+            const { latitude, longitude } = result;
+
+            addSiteMap.setView([latitude, longitude], 17);
+
+            if (postcodeMarker) {
+                addSiteMap.removeLayer(postcodeMarker);
+            }
+
+            postcodeMarker = L.marker([latitude, longitude]).addTo(addSiteMap);
         });
 
         setTimeout(() => addSiteMap.invalidateSize(), 200);
