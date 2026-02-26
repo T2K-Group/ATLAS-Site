@@ -73,7 +73,7 @@ function getPolygonCentroid(points) {
 function exportOrgSitesToCSV(org) {
 
     const rows = [
-        ["Name", "Address", "Postcode", "Centroid Latitude", "Centroid Longitude"]
+        ["Name", "Address", "Postcode", "Latitude", "Longitude"]
     ];
 
     org.sites.forEach(site => {
