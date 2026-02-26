@@ -53,6 +53,59 @@ async function fetchSitesWithAuth() {
     }
 }
 
+function getPolygonCentroid(points) {
+    if (!points || points.length === 0) return { lat: "", lon: "" };
+
+    let latSum = 0;
+    let lonSum = 0;
+
+    points.forEach(p => {
+        latSum += p.lat;
+        lonSum += p.lon;
+    });
+
+    return {
+        lat: latSum / points.length,
+        lon: lonSum / points.length
+    };
+}
+
+function exportOrgSitesToCSV(org) {
+
+    const rows = [
+        ["Name", "Address", "Postcode", "Centroid Latitude", "Centroid Longitude"]
+    ];
+
+    org.sites.forEach(site => {
+
+        const centroid = getPolygonCentroid(site.polygon_points);
+
+        rows.push([
+            site.name || "",
+            site.address || "",
+            site.postcode || "",
+            centroid.lat,
+            centroid.lon
+        ]);
+    });
+
+    const csvContent = rows
+        .map(row => row.map(value =>
+            `"${String(value).replace(/"/g, '""')}"`
+        ).join(","))
+        .join("\n");
+
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `${org.org_name.replace(/\s+/g, "_")}_sites.csv`;
+
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
 function renderSitesTable(apiResponse) {
     const container = document.getElementById("sites-table-container");
     if (!container) return;
@@ -81,6 +134,16 @@ function renderSitesTable(apiResponse) {
         });
 
         container.appendChild(addBtn);
+
+        const exportBtn = document.createElement("button");
+        exportBtn.className = "btn btn-sm btn-outline-secondary mb-2 ms-2";
+        exportBtn.textContent = "Export CSV";
+
+        exportBtn.addEventListener("click", () => {
+            exportOrgSitesToCSV(org);
+        });
+
+        container.appendChild(exportBtn);
 
         const table = document.createElement("table");
         table.className = "table table-hover";
