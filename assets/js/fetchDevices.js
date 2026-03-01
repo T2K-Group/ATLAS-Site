@@ -1,4 +1,9 @@
 let cachedSitesData = null;
+const orgContainers = new Map(); // orgId -> container div
+const siteTables = new Map(); // orgId -> siteId -> table element
+const deviceRowMap = new Map(); // deviceName -> { mainRow, detailsRow }
+
+const sortStates = new Map(); // tableElement -> { key, asc }
 // -------------------------
 // IndexedDB Helper
 // -------------------------
@@ -219,27 +224,35 @@ function formatTimeToEmpty(tte) {
 // -------------------------
 async function renderDevices(devicesData) {
   const container = document.getElementById("devices-container");
-  container.innerHTML = "";
-  const { fetch_ts, ...orgs } = devicesData.data;
 
-  for (const orgId in orgs) {
-    const org = orgs[orgId];
+  // Remove orgs that no longer exist
+  const existingOrgIds = new Set(Object.keys(devicesData.data));
+  for (const [orgId, orgDiv] of orgContainers) {
+    if (!existingOrgIds.has(orgId)) {
+      orgDiv.remove();
+      orgContainers.delete(orgId);
+      siteTables.delete(orgId);
+    }
+  }
 
-    // Org title
-    const orgTitle = document.createElement("h4");
-    orgTitle.className = "mb-3 mt-4 fw-semibold";
-    orgTitle.textContent = org.orgName || "Unknown Organisation";
-    container.appendChild(orgTitle);
+  for (const orgId in devicesData.data) {
+    const org = devicesData.data[orgId];
 
-    if (!org.devices.length) continue;
+    // Org container
+    let orgDiv = orgContainers.get(orgId);
+    if (!orgDiv) {
+      orgDiv = document.createElement("div");
+      container.appendChild(orgDiv);
+      orgContainers.set(orgId, orgDiv);
+    }
 
-    // -------------------------
+    orgDiv.innerHTML = `<h4 class="mb-3 mt-4 fw-semibold">${org.orgName || "Unknown Organisation"}</h4>`;
+
     // Group devices by site
-    // -------------------------
     const orgSites = cachedSitesData?.data?.[orgId]?.sites || [];
-    const siteMap = {};
+    const currentSiteMap = {};
     orgSites.forEach(site => {
-      if (site.checkin === 1 && site.active === 1) siteMap[site.id] = site.name;
+      if (site.checkin === 1 && site.active === 1) currentSiteMap[site.id] = site.name;
     });
 
     const devicesBySite = {};
@@ -248,7 +261,7 @@ async function renderDevices(devicesData) {
     org.devices.forEach(device => {
       if (device.atSite && device.atSite.length) {
         device.atSite.forEach(siteId => {
-          if (!siteMap[siteId]) return;
+          if (!currentSiteMap[siteId]) return;
           if (!devicesBySite[siteId]) devicesBySite[siteId] = [];
           devicesBySite[siteId].push(device);
         });
@@ -257,190 +270,153 @@ async function renderDevices(devicesData) {
       }
     });
 
+    // Combine sites and unassigned
+    const allSites = { ...devicesBySite };
+    if (unassignedDevices.length) allSites["unassigned"] = unassignedDevices;
+    if (!siteTables.has(orgId)) siteTables.set(orgId, new Map());
+
+    const orgSiteTables = siteTables.get(orgId);
+
     // -------------------------
-    // Helper to create a table
+    // Create / update tables
     // -------------------------
-    function createSiteTable(siteName, devices) {
-      // Header
-      const siteHeader = document.createElement("h6");
-      siteHeader.className = "mt-3 fw-semibold text-primary";
-      siteHeader.textContent = `${siteName} (${devices.length})`;
-      container.appendChild(siteHeader);
+    for (const siteId in allSites) {
+      const siteName = siteId === "unassigned" ? "Not at a Site" : currentSiteMap[siteId] || `Site ${siteId}`;
+      const devices = allSites[siteId];
 
-      // Table
-      const table = document.createElement("table");
-      table.className = "devices-table table table-hover align-middle";
-      const sortState = { key: null, asc: true };
+      let table = orgSiteTables.get(siteId);
+      if (!table) {
+        // Create new table
+        const siteHeader = document.createElement("h6");
+        siteHeader.className = "mt-3 fw-semibold text-primary";
+        siteHeader.textContent = `${siteName} (${devices.length})`;
+        orgDiv.appendChild(siteHeader);
 
-      table.innerHTML = `
-        <thead class="table-light">
-          <tr>
-            <th class="sortable" data-key="name">Name <i class="fa-solid fa-sort"></i></th>
-            <th class="sortable" data-key="battery">Battery <i class="fa-solid fa-sort"></i></th>
-            <th class="sortable" data-key="lastSeen">Last Seen <i class="fa-solid fa-sort"></i></th>
-            <th class="text-end"> </th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      `;
-      const tbody = table.querySelector("tbody");
+        table = document.createElement("table");
+        table.className = "devices-table table table-hover align-middle";
+        table.innerHTML = `
+          <thead class="table-light">
+            <tr>
+              <th class="sortable" data-key="name">Name <i class="fa-solid fa-sort"></i></th>
+              <th class="sortable" data-key="battery">Battery <i class="fa-solid fa-sort"></i></th>
+              <th class="sortable" data-key="lastSeen">Last Seen <i class="fa-solid fa-sort"></i></th>
+              <th class="text-end"></th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        `;
+        orgDiv.appendChild(table);
 
-      function renderRows(devices) {
-        tbody.innerHTML = "";
-        const fragment = document.createDocumentFragment();
-
-        devices.forEach(device => {
-          // Main row
-          const mainRow = document.createElement("tr");
-          mainRow.className = "device-row";
-          mainRow.style.cursor = "pointer";
-          mainRow.innerHTML = `
-            <td>${device.name || "Unnamed Device"}</td>
-            <td>${device.battPercent != null ? device.battPercent + "%" : "—"}</td>
-            <td>${device.lastSeen ? timeAgo(device.lastSeen) : "—"}</td>
-            <td><button class="expand-btn btn btn-sm btn-outline-secondary"><i class="fa-solid fa-chart-line"></i></button></td>
-          `;
-          fragment.appendChild(mainRow);
-
-          // Details row
-          const detailsRow = document.createElement("tr");
-          detailsRow.className = "device-details";
-          detailsRow.innerHTML = `<td colspan="4"><div class="details-content"></div></td>`;
-          fragment.appendChild(detailsRow);
-
-          const detailsContent = detailsRow.querySelector(".details-content");
-
-          function toggleRow() {
-            const isOpen = mainRow.classList.contains("open");
-            document.querySelectorAll(".device-row.open").forEach(row => {
-              row.classList.remove("open");
-              row.nextElementSibling.classList.remove("open");
-            });
-            if (isOpen) return;
-
-            mainRow.classList.add("open");
-            detailsRow.classList.add("open");
-
-            if (!detailsContent.dataset.loaded) {
-              const wrapper = document.createElement("div");
-              wrapper.className = "details-wrapper";
-
-              if (device.lat != null && device.lon != null) {
-                const mapImg = document.createElement("img");
-                mapImg.src = `https://maps.t2k.group?lat=${device.lat}&lon=${device.lon}&zoom=17&size=1000x600&radius=${device.acc}&shape=circle`;
-                mapImg.className = "details-map";
-                wrapper.appendChild(mapImg);
-              }
-
-              const infoContainer = document.createElement("div");
-              infoContainer.className = "details-info";
-
-              // Location
-              const locationSection = document.createElement("div");
-              locationSection.className = "detail-section";
-              locationSection.innerHTML = `
-                <div class="section-header"><i class="fa-solid fa-location-dot"></i> Location</div>
-                <div class="section-body">
-                  <div class="detail-item"><i class="fa-solid fa-globe"></i> Latitude: ${device.lat ?? "—"}</div>
-                  <div class="detail-item"><i class="fa-solid fa-globe"></i> Longitude: ${device.lon ?? "—"}</div>
-                  <div class="detail-item"><i class="fa-solid fa-crosshairs"></i> Accuracy: ${device.acc ?? "—"}</div>
-                </div>
-              `;
-              infoContainer.appendChild(locationSection);
-
-              // Battery
-              if (device.battVoltage || device.battTemp || device.battCurrentDraw || device.battTTE) {
-                const batterySection = document.createElement("div");
-                batterySection.className = "detail-section";
-                batterySection.innerHTML = `
-                  <div class="section-header"><i class="fa-solid fa-battery-full"></i> Battery</div>
-                  <div class="section-body">
-                    ${device.battVoltage ? `<div class="detail-item"><i class="fa-solid fa-bolt"></i> Voltage: ${device.battVoltage} V</div>` : ""}
-                    ${device.battTemp ? `<div class="detail-item"><i class="fa-solid fa-temperature-half"></i> Temp: ${device.battTemp} °C</div>` : ""}
-                    ${device.battCurrentDraw ? `<div class="detail-item"><i class="fa-solid fa-gauge"></i> Current: ${device.battCurrentDraw} A</div>` : ""}
-                    ${device.battTTE ? `<div class="detail-item"><i class="fa-solid fa-clock"></i> Time to Empty: ${timeTo(device.battTTE)}</div>` : ""}
-                  </div>
-                `;
-                infoContainer.appendChild(batterySection);
-              }
-
-              // Cell
-              if (device.cellId || device.mnc || device.mmc || device.tac) {
-                const cellSection = document.createElement("div");
-                cellSection.className = "detail-section";
-                cellSection.innerHTML = `
-                  <div class="section-header"><i class="fa-solid fa-tower-cell"></i> Cell Information</div>
-                  <div class="section-body">
-                    ${device.mmc ? `<div class="detail-item"><i class="fa-solid fa-globe"></i> MMC & MNC: ${device.mmc}${device.mnc}</div>` : ""}
-                    ${device.tac ? `<div class="detail-item"><i class="fa-solid fa-map-location-dot"></i> TAC: ${device.tac}</div>` : ""}
-                    ${device.cellId ? `<div class="detail-item"><i class="fa-solid fa-broadcast-tower"></i> Cell ID: ${device.cellId}</div>` : ""}
-                  </div>
-                `;
-                infoContainer.appendChild(cellSection);
-              }
-
-              wrapper.appendChild(infoContainer);
-              detailsContent.appendChild(wrapper);
-              detailsContent.dataset.loaded = "true";
-            }
-          }
-
-          mainRow.addEventListener("click", toggleRow);
-          mainRow.querySelector(".expand-btn").addEventListener("click", e => {
-            e.stopPropagation();
-            toggleRow();
+        // Sorting
+        sortStates.set(table, { key: null, asc: true });
+        table.querySelectorAll("th.sortable").forEach(th => {
+          th.style.cursor = "pointer";
+          th.addEventListener("click", () => {
+            sortDevicesTable(table, th.dataset.key);
           });
         });
 
-        tbody.appendChild(fragment);
+        orgSiteTables.set(siteId, table);
+      } else {
+        // Update header count
+        const header = table.previousElementSibling;
+        if (header) header.textContent = `${siteName} (${devices.length})`;
       }
 
-      // Sorting
-      function sortDevices(key) {
-        if (sortState.key === key) sortState.asc = !sortState.asc;
-        else { sortState.key = key; sortState.asc = true; }
-
-        const sorted = [...devices].sort((a, b) => {
-          let valA, valB;
-          switch (key) {
-            case "name":
-              valA = a.name?.toLowerCase() || "";
-              valB = b.name?.toLowerCase() || "";
-              return valA.localeCompare(valB) * (sortState.asc ? 1 : -1);
-            case "battery":
-              valA = a.battPercent ?? -1;
-              valB = b.battPercent ?? -1;
-              return (valA - valB) * (sortState.asc ? 1 : -1);
-            case "lastSeen":
-              valA = a.lastSeen ?? 0;
-              valB = b.lastSeen ?? 0;
-              return (valA - valB) * (sortState.asc ? 1 : -1);
-            default: return 0;
-          }
-        });
-
-        renderRows(sorted);
-      }
-
-      table.querySelectorAll("th.sortable").forEach(th => {
-        th.style.cursor = "pointer";
-        th.addEventListener("click", () => sortDevices(th.dataset.key));
-      });
-
-      renderRows(devices);
-      container.appendChild(table);
-    }
-
-    // Render each site table
-    Object.keys(devicesBySite).forEach(siteId => {
-      createSiteTable(siteMap[siteId] || `Site ${siteId}`, devicesBySite[siteId]);
-    });
-
-    // Render unassigned devices
-    if (unassignedDevices.length) {
-      createSiteTable("Not at a Site", unassignedDevices);
+      updateTableRows(table, devices);
     }
   }
+}
+
+// -------------------------
+function updateTableRows(table, devices) {
+  const tbody = table.querySelector("tbody");
+  const fragment = document.createDocumentFragment();
+
+  devices.forEach(device => {
+    let rows = deviceRowMap.get(device.name);
+    if (!rows) {
+      const mainRow = document.createElement("tr");
+      mainRow.className = "device-row";
+      mainRow.dataset.deviceName = device.name;
+      mainRow.style.cursor = "pointer";
+
+      const detailsRow = document.createElement("tr");
+      detailsRow.className = "device-details";
+      detailsRow.innerHTML = `<td colspan="4"><div class="details-content"></div></td>`;
+
+      rows = { mainRow, detailsRow };
+      deviceRowMap.set(device.name, rows);
+
+      // append immediately
+      fragment.appendChild(mainRow);
+      fragment.appendChild(detailsRow);
+
+      // Attach toggle
+      mainRow.addEventListener("click", () => toggleDetails(mainRow, detailsRow, device));
+      mainRow.addEventListener("click", e => e.stopPropagation());
+    }
+
+    // Update mainRow content
+    rows.mainRow.innerHTML = `
+      <td>${device.name || "Unnamed Device"}</td>
+      <td>${device.battPercent != null ? device.battPercent + "%" : "—"}</td>
+      <td>${device.lastSeen ? timeAgo(device.lastSeen) : "—"}</td>
+      <td><button class="expand-btn btn btn-sm btn-outline-secondary"><i class="fa-solid fa-chart-line"></i></button></td>
+    `;
+
+    // Make expand button work
+    rows.mainRow.querySelector(".expand-btn").addEventListener("click", e => {
+      e.stopPropagation();
+      toggleDetails(rows.mainRow, rows.detailsRow, device);
+    });
+  });
+
+  tbody.appendChild(fragment);
+}
+
+
+function sortDevicesTable(table, key) {
+  const state = sortStates.get(table);
+  if (state.key === key) state.asc = !state.asc;
+  else { state.key = key; state.asc = true; }
+
+  const tbody = table.querySelector("tbody");
+  const rows = Array.from(tbody.querySelectorAll("tr.device-row"));
+  const sortedRows = rows.sort((a, b) => {
+    const nameA = a.cells[0].textContent.toLowerCase();
+    const nameB = b.cells[0].textContent.toLowerCase();
+    const batteryA = parseInt(a.cells[1].textContent) || -1;
+    const batteryB = parseInt(b.cells[1].textContent) || -1;
+    const lastSeenA = a.cells[2].textContent;
+    const lastSeenB = b.cells[2].textContent;
+
+    switch (key) {
+      case "name": return (nameA.localeCompare(nameB)) * (state.asc ? 1 : -1);
+      case "battery": return (batteryA - batteryB) * (state.asc ? 1 : -1);
+      case "lastSeen": return (lastSeenA.localeCompare(lastSeenB)) * (state.asc ? 1 : -1);
+    }
+  });
+
+  const fragment = document.createDocumentFragment();
+  sortedRows.forEach(row => {
+    fragment.appendChild(row);
+    fragment.appendChild(row.nextElementSibling); // details row
+  });
+
+  tbody.appendChild(fragment);
+}
+
+// -------------------------
+// Filter Function
+// -------------------------
+function filterDevices(query) {
+  const q = query.toLowerCase();
+  deviceRowMap.forEach(({ mainRow, detailsRow }, name) => {
+    const show = name.toLowerCase().includes(q);
+    mainRow.style.display = show ? "" : "none";
+    detailsRow.style.display = show ? "" : "none";
+  });
 }
 
 // -------------------------

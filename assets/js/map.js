@@ -269,7 +269,6 @@ async function getDevicesFromDB() {
 // Map initialization using IndexedDB devices
 // -------------------------
 async function initMap(layerControl, overlayMaps) {
-  // 1️⃣ Load devices from IndexedDB
   const orgs = await getDevicesFromDB();
 
   if (!orgs) return;
