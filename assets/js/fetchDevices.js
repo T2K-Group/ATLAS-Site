@@ -90,7 +90,7 @@ async function getDevicesFromDB() {
 // -------------------------
 // Fetch Devices API
 // -------------------------
-async function fetchDevicesWithAuth() {
+async function fetchDevicesWithAuth(forceFull = false) {
   function getCookie(name) {
     return document.cookie
       .split("; ")
@@ -105,11 +105,17 @@ async function fetchDevicesWithAuth() {
   }
 
   let delta_ts = localStorage.getItem("delta_ts");
-  delta_ts = 0 // temp fix as something is wrong with sys
+
+  // First load OR manual force
+  if (!delta_ts || forceFull) {
+    delta_ts = 0;
+  }
 
   try {
     let url = "https://atlasapi.t2k.group/fetch/devices";
-    if (delta_ts) url += `?timestamp=${encodeURIComponent(delta_ts)}`;
+    if (delta_ts) {
+      url += `?timestamp=${encodeURIComponent(delta_ts)}`;
+    }
 
     const response = await fetch(url, {
       method: "GET",
@@ -120,11 +126,14 @@ async function fetchDevicesWithAuth() {
     });
 
     if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
     const data = await response.json();
 
-    if (data?.data?.fetch_ts) localStorage.setItem("delta_ts", data.data.fetch_ts);
+    // Save new fetch timestamp
+    if (data?.data?.fetch_ts) {
+      localStorage.setItem("delta_ts", data.data.fetch_ts);
+    }
 
-    // Save to IndexedDB
     await saveDevicesToDB(data);
 
     return data;
@@ -246,8 +255,13 @@ async function renderDevices(devicesData) {
       orgContainers.set(orgId, orgDiv);
     }
 
-    orgDiv.innerHTML = `<h4 class="mb-3 mt-4 fw-semibold">${org.orgName || "Unknown Organisation"}</h4>`;
-
+    let header = orgDiv.querySelector("h4");
+    if (!header) {
+      header = document.createElement("h4");
+      header.className = "mb-3 mt-4 fw-semibold";
+      orgDiv.appendChild(header);
+    }
+    header.textContent = org.orgName || "Unknown Organisation";
     // Group devices by site
     const orgSites = cachedSitesData?.data?.[orgId]?.sites || [];
     const currentSiteMap = {};
@@ -331,59 +345,99 @@ async function renderDevices(devicesData) {
 // -------------------------
 function updateTableRows(table, devices) {
   const tbody = table.querySelector("tbody");
-  const fragment = document.createDocumentFragment();
+
+  // Track devices currently in table
+  const existingRows = new Map();
+  tbody.querySelectorAll("tr.device-row").forEach(row => {
+    existingRows.set(row.dataset.deviceName, row);
+  });
+
+  const incomingDeviceNames = new Set();
 
   devices.forEach(device => {
-    let rows = deviceRowMap.get(device.name);
-    if (!rows) {
-      const mainRow = document.createElement("tr");
+    const deviceName = device.name;
+    incomingDeviceNames.add(deviceName);
+
+    let mainRow = existingRows.get(deviceName);
+    let detailsRow;
+
+    if (!mainRow) {
+      // 🆕 NEW DEVICE — create rows
+      mainRow = document.createElement("tr");
       mainRow.className = "device-row";
-      mainRow.dataset.deviceName = device.name;
+      mainRow.dataset.deviceName = deviceName;
       mainRow.style.cursor = "pointer";
 
-      const detailsRow = document.createElement("tr");
+      detailsRow = document.createElement("tr");
       detailsRow.className = "device-details";
+      detailsRow.style.display = "none";
       detailsRow.innerHTML = `<td colspan="4"><div class="details-content"></div></td>`;
 
-      rows = { mainRow, detailsRow };
-      deviceRowMap.set(device.name, rows);
+      tbody.appendChild(mainRow);
+      tbody.appendChild(detailsRow);
 
-      // append immediately
-      fragment.appendChild(mainRow);
-      fragment.appendChild(detailsRow);
-
-      // Attach toggle
-      mainRow.addEventListener("click", () => toggleDetails(mainRow, detailsRow, device));
-      mainRow.addEventListener("click", e => e.stopPropagation());
+      mainRow.addEventListener("click", () =>
+        toggleDetails(mainRow, detailsRow, device)
+      );
+    } else {
+      // Existing device
+      detailsRow = mainRow.nextElementSibling;
     }
 
-    // Update mainRow content
-    rows.mainRow.innerHTML = `
+    const newHTML = `
       <td>${device.name || "Unnamed Device"}</td>
       <td>${device.battPercent != null ? device.battPercent + "%" : "—"}</td>
       <td>${device.lastSeen ? timeAgo(device.lastSeen) : "—"}</td>
-      <td><button class="expand-btn btn btn-sm btn-outline-secondary"><i class="fa-solid fa-chart-line"></i></button></td>
+      <td>
+        <button class="expand-btn btn btn-sm btn-outline-secondary">
+          <i class="fa-solid fa-chart-line"></i>
+        </button>
+      </td>
     `;
 
-    // Make expand button work
-    rows.mainRow.querySelector(".expand-btn").addEventListener("click", e => {
-      e.stopPropagation();
-      toggleDetails(rows.mainRow, rows.detailsRow, device);
-    });
+    if (mainRow.innerHTML !== newHTML) {
+      const isExpanded = detailsRow.style.display !== "none";
+
+      mainRow.innerHTML = newHTML;
+
+      mainRow.querySelector(".expand-btn").addEventListener("click", e => {
+        e.stopPropagation();
+        toggleDetails(mainRow, detailsRow, device);
+      });
+
+      // Preserve expanded state
+      if (isExpanded) {
+        detailsRow.style.display = "";
+      }
+    }
   });
 
-  tbody.appendChild(fragment);
+
+  existingRows.forEach((row, deviceName) => {
+    if (!incomingDeviceNames.has(deviceName)) {
+      const detailsRow = row.nextElementSibling;
+      row.remove();
+      if (detailsRow) detailsRow.remove();
+    }
+  });
 }
 
 
 function sortDevicesTable(table, key) {
   const state = sortStates.get(table);
   if (state.key === key) state.asc = !state.asc;
-  else { state.key = key; state.asc = true; }
+  else {
+    state.key = key;
+    state.asc = true;
+  }
 
   const tbody = table.querySelector("tbody");
-  const rows = Array.from(tbody.querySelectorAll("tr.device-row"));
-  const sortedRows = rows.sort((a, b) => {
+
+  const mainRows = Array.from(
+    tbody.querySelectorAll("tr.device-row")
+  );
+
+  const sorted = mainRows.sort((a, b) => {
     const nameA = a.cells[0].textContent.toLowerCase();
     const nameB = b.cells[0].textContent.toLowerCase();
     const batteryA = parseInt(a.cells[1].textContent) || -1;
@@ -392,16 +446,31 @@ function sortDevicesTable(table, key) {
     const lastSeenB = b.cells[2].textContent;
 
     switch (key) {
-      case "name": return (nameA.localeCompare(nameB)) * (state.asc ? 1 : -1);
-      case "battery": return (batteryA - batteryB) * (state.asc ? 1 : -1);
-      case "lastSeen": return (lastSeenA.localeCompare(lastSeenB)) * (state.asc ? 1 : -1);
+      case "name":
+        return nameA.localeCompare(nameB) * (state.asc ? 1 : -1);
+      case "battery":
+        return (batteryA - batteryB) * (state.asc ? 1 : -1);
+      case "lastSeen":
+        return lastSeenA.localeCompare(lastSeenB) * (state.asc ? 1 : -1);
+      default:
+        return 0;
     }
   });
 
   const fragment = document.createDocumentFragment();
-  sortedRows.forEach(row => {
-    fragment.appendChild(row);
-    fragment.appendChild(row.nextElementSibling); // details row
+
+  sorted.forEach(mainRow => {
+    const detailsRow = tbody.querySelector(
+      `tr.device-details`
+    );
+
+    // Instead of nextElementSibling, use this:
+    const next = mainRow.nextElementSibling;
+    const isDetails =
+      next && next.classList.contains("device-details");
+
+    fragment.appendChild(mainRow);
+    if (isDetails) fragment.appendChild(next);
   });
 
   tbody.appendChild(fragment);
@@ -474,12 +543,13 @@ searchInput.addEventListener("input", () => {
 // Init Function
 // -------------------------
 async function init() {
+  // Load cached data first (fast UI paint)
   const cached = await getDevicesFromDB();
   cachedDevicesData = cached;
   renderDevices(cached);
 
   const [freshDevices, freshSites] = await Promise.all([
-    fetchDevicesWithAuth(),
+    fetchDevicesWithAuth(true),  
     fetchSitesWithAuth()
   ]);
 

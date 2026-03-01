@@ -320,6 +320,7 @@ function initMapEditor(site) {
 
     const nameInput = container.querySelector(".site-name");
     const addressInput = container.querySelector(".site-address");
+    const postcodeInput = container.querySelector(".site-postcode")
     
     const postcodeSearchBtn = container.querySelector(".postcode-search-btn");
     let postcodeMarker = null;
