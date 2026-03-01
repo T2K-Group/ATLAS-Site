@@ -2,6 +2,7 @@ const lastDeviceState = {};
 let map = null;
 let mapMarker = null;
 let locationModal = null;
+let settingsModal = null;
 
 
 // -------------------------
@@ -380,11 +381,12 @@ async function renderDevicesTable() {
           <div class="table-responsive">
             <table class="table table-sm table-hover table-striped align-middle">
               <thead class="table-light">
-                <tr>
+                <tr class="device-table">
                   <th>Device</th>
                   <th>Location</th>
                   <th>Battery</th>
                   <th>Last Seen</th>
+                  <th>Settings</th>
                 </tr>
               </thead>
               <tbody></tbody>
@@ -413,6 +415,7 @@ async function renderDevicesTable() {
             <td class="dev-location"></td>
             <td class="dev-batt"></td>
             <td class="dev-lastseen"></td>
+            <td class="dev-settings"></td>
           `;
 
           tbody.appendChild(row);
@@ -465,8 +468,19 @@ async function renderDevicesTable() {
             </button>
           `;
 
+          const settingsCell = row.querySelector(".dev-settings");
+          settingsCell.innerHTML = `
+          <button class="btn btn-sm btn-outline-primary view-location">
+          <i class="fa-solid fa-gear"></i>
+            </button>
+          `
+
           locCell.querySelector("button").onclick = () => {
             openDeviceMap(dev);
+          };
+
+          settingsCell.querySelector("button").onclick = () => {
+            openDeviceSettings(dev)
           };
         }
 
@@ -548,6 +562,55 @@ function openDeviceMap(dev) {
     }, 200);
 
   }, 300);
+}
+
+// Safe getter for numbers or parsed values
+function getValue(val) {
+  if (val == null) return "N/A";
+  if (typeof val === "object") return val.parsedValue ?? "N/A";
+  return val;
+}
+
+// Convert timestamp to readable date
+function formatTimestamp(ts) {
+  if (!ts) return "N/A";
+  const date = new Date(Number(ts));
+  return date.toLocaleString();
+}
+
+
+function openDeviceSettings(dev) {
+  const el = document.getElementById("settingsModal");
+  if (!settingsModal) settingsModal = new bootstrap.Modal(el);
+
+  // Device name
+  document.getElementById("deviceName").textContent = dev.name;
+
+  // Battery Info
+  const battPercent = getValue(dev.battPercent);
+  const battColor = battPercent < 20 ? "text-danger fw-bold" : "";
+  document.getElementById("battPercent").innerHTML = `Battery: <span class="${battColor}">${battPercent}%</span>`;
+  document.getElementById("battVoltage").textContent = `Voltage: ${getValue(dev.battVoltage)} V`;
+  document.getElementById("battTemp").textContent = `Temperature: ${getValue(dev.battTemp)} °C`;
+  document.getElementById("battCurrentDraw").textContent = `Current Draw: ${getValue(dev.battCurrentDraw)} A`;
+  document.getElementById("battTTE").textContent = `Time to Empty: ${timeTo(dev.battTTE)}`;
+
+  // Cell Info
+  document.getElementById("mmc").textContent = `MCC: ${dev.mmc ?? "N/A"}`;
+  document.getElementById("mnc").textContent = `MNC: ${dev.mnc ?? "N/A"}`;
+  document.getElementById("tac").textContent = `TAC: ${dev.tac ?? "N/A"}`;
+  document.getElementById("band").textContent = `Band: ${dev.band ?? "N/A"}`;
+  document.getElementById("cellId").textContent = `Cell ID: ${dev.cellId ?? "N/A"}`;
+
+  // Location Info
+  document.getElementById("lat").textContent = `Latitude: ${getValue(dev.lat)}`;
+  document.getElementById("lon").textContent = `Longitude: ${getValue(dev.lon)}`;
+  document.getElementById("accuracy").textContent = `Accuracy: ${getValue(dev.acc)} meters`;
+  document.getElementById("atSite").textContent = `At Site: ${dev.atSite && dev.atSite.length ? dev.atSite.join(", ") : "N/A"}`;
+  document.getElementById("lastSeen").textContent = `Last Seen: ${formatTimestamp(dev.lastSeen)}`;
+
+  // Show modal
+  settingsModal.show();
 }
 
 async function init(){
