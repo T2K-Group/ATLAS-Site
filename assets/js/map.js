@@ -1,7 +1,6 @@
 // -------------------------
 // Global map and layers
 // -------------------------
-let map;
 const orgLayers = {};       // LayerGroup per org
 const orgMarkers = {};      // Track device markers per org
 const orgSiteLayers = {};   // LayerGroup per org for sites
