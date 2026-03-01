@@ -21,9 +21,7 @@
     <!-- App CSS -->  
     <link id="theme-style" rel="stylesheet" href="assets/css/portal.css">
 
-	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-	<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
+	<link rel="stylesheet"href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
 
 </head> 
 
@@ -162,6 +160,20 @@
 			<div id="device-container"></div>
 		</div>
 	</div>
+
+	<div class="modal fade" id="locationModal" tabindex="-1">
+		<div class="modal-dialog modal-lg modal-dialog-centered">
+		  <div class="modal-content">
+			<div class="modal-header">
+			  <h5 class="modal-title">Device Location</h5>
+			  <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+			</div>
+			<div class="modal-body p-0">
+			  <div id="map" style="height: 450px;"></div>
+			</div>
+		  </div>
+		</div>
+	  </div>
 	    
 	    <footer class="app-footer">
 		    <div class="container text-center py-3">
@@ -174,10 +186,11 @@
 
 		
 
- 
+	
     <!-- Javascript -->          
     <script src="assets/plugins/popper.min.js"></script>
     <script src="assets/plugins/bootstrap/js/bootstrap.min.js"></script>  
+	<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 
     <!-- Page Specific JS -->

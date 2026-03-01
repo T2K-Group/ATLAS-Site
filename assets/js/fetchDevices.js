@@ -1,4 +1,7 @@
 const lastDeviceState = {};
+let map = null;
+let mapMarker = null;
+let locationModal = null;
 
 
 // -------------------------
@@ -273,16 +276,23 @@ async function fetchAndUpdateDevices() {
 // Utility Functions
 // -------------------------
 function timeAgo(timestamp) {
-  const now = new Date();
-  const past = new Date(timestamp);
-  const seconds = Math.floor((now - past) / 1000);
-  if (seconds < 60) return `${seconds} seconds ago`;
+  if (!timestamp) return "-";
+
+  const seconds = Math.floor((Date.now() - new Date(timestamp)) / 1000);
+
+  if (seconds < 60)
+    return `${seconds}s ago`;
+
   const minutes = Math.floor(seconds / 60);
-  if (minutes < 60) return `${minutes} minute${minutes !== 1 ? "s" : ""} ago`;
+  if (minutes < 60)
+    return `${minutes}m ago`;
+
   const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours} hour${hours !== 1 ? "s" : ""} ago`;
+  if (hours < 24)
+    return `${hours}h ago`;
+
   const days = Math.floor(hours / 24);
-  return `${days} day${days !== 1 ? "s" : ""} ago`;
+  return `${days}d ago`;
 }
 
 function timeTo(timestamp) {
@@ -326,135 +336,218 @@ async function renderDevicesTable() {
   for (const orgId in data) {
     const org = data[orgId];
 
-    // Org card
+    // -------------------------
+    // ORG CARD
+    // -------------------------
     let orgCard = container.querySelector(`#org-${orgId}`);
     if (!orgCard) {
       orgCard = document.createElement("div");
       orgCard.id = `org-${orgId}`;
-      orgCard.className = "card mb-3";
+      orgCard.className = "card shadow-sm mb-4";
 
-      const orgHeader = document.createElement("div");
-      orgHeader.className = "card-header bg-primary text-white";
-      orgHeader.textContent = org.orgName;
-      orgCard.appendChild(orgHeader);
-
-      const orgBody = document.createElement("div");
-      orgBody.className = "card-body";
-      orgCard.appendChild(orgBody);
+      orgCard.innerHTML = `
+        <div class="card-header bg-primary text-white fw-bold">
+          ${org.orgName}
+        </div>
+        <div class="card-body"></div>
+      `;
 
       container.appendChild(orgCard);
     }
 
     const orgBody = orgCard.querySelector(".card-body");
 
-    // Track sites rendered
-    const sitesToRender = {};
-
+    // -------------------------
+    // SITES
+    // -------------------------
     for (const siteId in org.sites) {
       const site = org.sites[siteId];
-
-      // Only render if active + checkin OR if pseudo site (_unassigned)
       const isPseudo = site.id === "_unassigned";
+
       if (!isPseudo && !(site.active === 1 && site.checkin === 1)) continue;
 
-      sitesToRender[siteId] = site;
-
       let siteSection = orgBody.querySelector(`#site-${siteId}`);
+
       if (!siteSection) {
         siteSection = document.createElement("div");
         siteSection.id = `site-${siteId}`;
+        siteSection.className = "mb-4";
 
-        const siteTitle = document.createElement("h5");
-        siteTitle.textContent = isPseudo ? "Not in a Site" : site.name;
-        siteSection.appendChild(siteTitle);
-
-        const table = document.createElement("table");
-        table.className = "table table-sm table-bordered table-hover";
-        table.innerHTML = `
-          <thead>
-            <tr>
-              <th>Device</th>
-              <th>Lat</th>
-              <th>Lon</th>
-              <th>Battery %</th>
-              <th>Last Seen</th>
-            </tr>
-          </thead>
-          <tbody></tbody>
+        siteSection.innerHTML = `
+          <h5 class="mb-2 fw-semibold">
+            ${isPseudo ? "Not in a Site" : site.name}
+          </h5>
+          <div class="table-responsive">
+            <table class="table table-sm table-hover table-striped align-middle">
+              <thead class="table-light">
+                <tr>
+                  <th>Device</th>
+                  <th>Location</th>
+                  <th>Battery</th>
+                  <th>Last Seen</th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
         `;
-        siteSection.appendChild(table);
+
         orgBody.appendChild(siteSection);
       }
 
       const tbody = siteSection.querySelector("tbody");
-      const renderedRows = {};
+      const activeRows = new Set();
 
       site.devices.forEach(dev => {
         const key = `${orgId}_${siteId}_${dev.name}`;
-        renderedRows[key] = true;
-
-        const prev = lastDeviceState[key];
-
-        // Skip if unchanged
-        if (
-          prev &&
-          prev.lat === dev.lat &&
-          prev.lon === dev.lon &&
-          prev.battPercent === dev.battPercent &&
-          prev.lastSeen === dev.lastSeen
-        ) return;
-
-        lastDeviceState[key] = { ...dev };
+        activeRows.add(dev.name);
 
         let row = tbody.querySelector(`tr[data-device="${dev.name}"]`);
+
         if (!row) {
           row = document.createElement("tr");
-          row.setAttribute("data-device", dev.name);
+          row.dataset.device = dev.name;
+
+          row.innerHTML = `
+            <td class="dev-name"></td>
+            <td class="dev-location"></td>
+            <td class="dev-batt"></td>
+            <td class="dev-lastseen"></td>
+          `;
+
           tbody.appendChild(row);
         }
 
-        row.innerHTML = `
-          <td>${dev.name}</td>
-          <td>${dev.lat.toFixed(5)}</td>
-          <td>${dev.lon.toFixed(5)}</td>
-          <td>${dev.battPercent}%</td>
-          <td>${timeAgo(dev.lastSeen)}</td>
-        `;
+        const prev = lastDeviceState[key];
+
+        // Only update static data if changed
+        if (
+          !prev ||
+          prev.battPercent !== dev.battPercent
+        ) {
+          row.querySelector(".dev-name").textContent = dev.name;
+
+          const battCell = row.querySelector(".dev-batt");
+
+          if (dev.battPercent == "full") {
+            battCell.innerHTML = `
+              <i class="fa-solid fa-battery-full text-success" title="Full"></i>
+            `;
+          }
+          else if (dev.battPercent == "high") {
+            battCell.innerHTML = `
+              <i class="fa-solid fa-battery-three-quarters text-success" title="High"></i>
+            `;
+          }
+          else if (dev.battPercent == "med") {
+            battCell.innerHTML = `
+              <i class="fa-solid fa-battery-half text-warning" title="Medium"></i>
+            `;
+          }
+          else if (dev.battPercent == "low") {
+            battCell.innerHTML = `
+              <i class="fa-solid fa-battery-quarter text-warning" title="Low"></i>
+            `;
+          }
+          else if (dev.battPercent == "crit") {
+            battCell.innerHTML = `
+              <i class="fa-solid fa-battery-empty text-danger" title="Critical"></i>
+            `;
+          }
+          else {
+            battCell.textContent = dev.battPercent + "%";
+          }
+
+          const locCell = row.querySelector(".dev-location");
+          locCell.innerHTML = `
+            <button class="btn btn-sm btn-outline-primary view-location">
+              View
+            </button>
+          `;
+
+          locCell.querySelector("button").onclick = () => {
+            openDeviceMap(dev);
+          };
+        }
+
+        // Always store state
+        lastDeviceState[key] = dev;
+
+        // Always update last seen text
+        row.querySelector(".dev-lastseen").textContent =
+          timeAgo(dev.lastSeen);
       });
 
-      // Remove rows no longer present
+      // Remove stale rows
       Array.from(tbody.querySelectorAll("tr")).forEach(tr => {
-        const key = `${orgId}_${siteId}_${tr.dataset.device}`;
-        if (!renderedRows[key]) {
+        if (!activeRows.has(tr.dataset.device)) {
           tbody.removeChild(tr);
-          delete lastDeviceState[key];
         }
       });
-    }
-
-    // --- Handle devices not in any site ---
-    if (!org.sites["_unassigned"]) {
-      const unassignedDevices = [];
-      Object.values(org.sites).forEach(site => {
-        if (site.id !== "_unassigned") {
-          site.devices.forEach(dev => {
-            if (!dev.atSite || dev.atSite.length === 0) {
-              unassignedDevices.push(dev);
-            }
-          });
-        }
-      });
-
-      if (unassignedDevices.length > 0) {
-        if (!org.sites["_unassigned"]) {
-          org.sites["_unassigned"] = { id: "_unassigned", name: "Not in a Site", devices: [] };
-        }
-        org.sites["_unassigned"].devices = unassignedDevices;
-        // Render pseudo-site
-        sitesToRender["_unassigned"] = org.sites["_unassigned"];
-      }
     }
   }
+}
+
+function updateLastSeenTimes() {
+  document.querySelectorAll("tr[data-device]").forEach(row => {
+    const deviceName = row.dataset.device;
+
+    const key = Object.keys(lastDeviceState).find(k =>
+      k.endsWith("_" + deviceName)
+    );
+
+    if (!key) return;
+
+    const dev = lastDeviceState[key];
+    const cell = row.querySelector(".dev-lastseen");
+
+    if (!cell) return;
+
+    const newText = timeAgo(dev.lastSeen);
+
+    if (cell.textContent !== newText) {
+      cell.textContent = newText;
+    }
+  });
+}
+
+
+function openDeviceMap(dev) {
+  const modalElement = document.getElementById("locationModal");
+
+  if (!locationModal) {
+    locationModal = new bootstrap.Modal(modalElement);
+  }
+
+  locationModal.show();
+
+  // Wait for modal animation to finish
+  setTimeout(() => {
+    if (!map) {
+      map = L.map("map").setView([dev.lat, dev.lon], 15);
+
+      L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: "&copy; OpenStreetMap contributors"
+      }).addTo(map);
+    }
+
+    map.setView([dev.lat, dev.lon], 15);
+
+    if (mapMarker) {
+      map.removeLayer(mapMarker);
+    }
+
+    mapMarker = L.marker([dev.lat, dev.lon])
+      .addTo(map)
+      .bindPopup(`<strong>${dev.name}</strong>`)
+      .openPopup();
+
+    // Fix rendering issue when inside modal
+    setTimeout(() => {
+      map.invalidateSize();
+    }, 200);
+
+  }, 300);
 }
 
 async function init(){
@@ -462,6 +555,8 @@ async function init(){
   await fetchAndSaveAtlasData(true)
   await renderDevicesTable()
   startDevicePolling();
+  // Update every second
+  setInterval(updateLastSeenTimes, 1000);
 }
 
 init()
