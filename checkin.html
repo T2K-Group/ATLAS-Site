@@ -2,14 +2,14 @@
 <html lang="en"> 
 <head>
 	
-    <title>ATLAS - Overview</title>
+    <title>ATLAS - Check In</title>
     
     <!-- Meta -->
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <meta name="description" content="ATLAS Tracking Platform by T2K Group">
+    <meta name="description" content="Check In - ATLAS Tracking Platform by T2K Group">
     <meta name="author" content="T2K Group Limited">    
     <link rel="shortcut icon" href="favicon.ico"> 
 
@@ -21,57 +21,11 @@
     <!-- App CSS -->  
     <link id="theme-style" rel="stylesheet" href="assets/css/portal.css">
 
-	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-	<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css"/>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
-
-
 </head> 
 
-<style>
-/* Full viewport flex layout for wrapper */
-.app-wrapper {
-    display: flex;
-    flex-direction: column; /* stack header, content, footer */
-    height: 100vh;
-    width: 87%;
-}
 
-/* Header and footer: fixed height */
-.app-header {
-    height: 64px; /* your header height */
-    flex-shrink: 0;
-}
 
-.app-footer {
-    height: 40px; /* approximate footer height */
-    flex-shrink: 0;
-    text-align: center;
-    line-height: 40px;
-}
 
-/* Main content: take remaining space */
-.app-content {
-    flex: 1 1 auto; /* grow to fill remaining space */
-    padding: 5px;   /* optional padding around map */
-    box-sizing: border-box;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-/* Map fills most of the content area */
-#map {
-    width: 100%;     /* full width of app-content */
-    height: 87%;    /* fill remaining vertical space */
-    border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
-}
-
-</style>
-
-<link rel="stylesheet" href="https://unpkg.com/leaflet.fullscreen@2.4.0/Control.FullScreen.css" />
 <body class="app">   	
     <header class="app-header fixed-top">	   	            
         <div class="app-header-inner">  
@@ -182,13 +136,13 @@
 	    </div><!--//app-sidepanel-->
     </header><!--//app-header-->
     
-	<div class="app-wrapper mw-100">
+	<div class="app-wrapper">
 		<div id="app-sidepanel" class="app-sidepanel"> 
 			<!-- sidebar content -->
 		</div>
 		
-		<div class="app-content">
-			<div id="map"></div>
+		<div class="app-content py-3 px-3">
+			<div id="checkin-container"></div>
 		</div>
 	</div>
 	    
@@ -203,19 +157,17 @@
 
 		
 
- 
+	
     <!-- Javascript -->          
     <script src="assets/plugins/popper.min.js"></script>
     <script src="assets/plugins/bootstrap/js/bootstrap.min.js"></script>  
+	<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
 
     <!-- Page Specific JS -->
+    <script src="assets/js/app.js"></script> 
 	<script src="assets/js/login.js"></script>
-    <script src="assets/js/app.js"></script>
-	<script src="assets/js/fetchDevices.js"></script>
-	<script src="https://unpkg.com/leaflet.fullscreen@2.4.0/Control.FullScreen.js"></script> 
-	<script src="assets/js/map.js"></script> 
-	
+
 </body>
 </html> 
 
