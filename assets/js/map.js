@@ -5,6 +5,8 @@ const orgLayers = {};       // LayerGroup per org
 const orgMarkers = {};      // Track device markers per org
 const orgSiteLayers = {};   // LayerGroup per org for sites
 
+
+
 document.addEventListener("DOMContentLoaded", async () => {
   map = L.map("map", { zoomControl: true, fullscreenControl: true }).setView([54.5, -3], 6);
 
@@ -34,6 +36,17 @@ document.addEventListener("DOMContentLoaded", async () => {
 // Add or update a device marker
 // -------------------------
 function addOrUpdateMarker(orgName, device) {
+  // Skip if coordinates are missing or invalid
+  if (
+    device.lat == null ||
+    device.lon == null ||
+    isNaN(device.lat) ||
+    isNaN(device.lon)
+  ) {
+    console.warn(`Skipping device ${device.name} due to invalid coordinates`, device);
+    return;
+  }
+
   if (!orgLayers[orgName]) {
     orgLayers[orgName] = L.layerGroup().addTo(map);
     orgMarkers[orgName] = {};
@@ -42,19 +55,32 @@ function addOrUpdateMarker(orgName, device) {
   const markers = orgMarkers[orgName];
   let marker = markers[device.name];
 
+  const smallDeviceIcon = L.icon({
+    iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+    shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+
+    iconSize: [14, 22],
+    iconAnchor: [7, 22],     
+    popupAnchor: [1, -18],
+    shadowSize: [22, 22]
+  });
+
   if (marker) {
-    const moved = marker.getLatLng().lat !== device.lat || marker.getLatLng().lng !== device.lon;
+    const current = marker.getLatLng();
+    const moved = current.lat !== device.lat || current.lng !== device.lon;
     const changedBatt = marker.options.battPercent !== device.battPercent;
     const changedAcc = marker.options.acc !== device.acc;
 
     if (!moved && !changedBatt && !changedAcc) return;
 
     if (moved) marker.setLatLng([device.lat, device.lon]);
+
     marker.setPopupContent(
       `<strong>${device.name}</strong><br>` +
       `Battery: ${device.battPercent ?? "N/A"}<br>` +
       `Last Seen: ${new Date(device.lastSeen).toLocaleString()}`
     );
+
     marker.options.battPercent = device.battPercent;
     marker.options.acc = device.acc;
 
@@ -62,8 +88,14 @@ function addOrUpdateMarker(orgName, device) {
       marker.circle.setLatLng([device.lat, device.lon]);
       marker.circle.setRadius(device.acc || 0);
     }
+
   } else {
-    marker = L.marker([device.lat, device.lon], { battPercent: device.battPercent, acc: device.acc });
+    marker = L.marker([device.lat, device.lon], {
+      icon: smallDeviceIcon,
+      battPercent: device.battPercent,
+      acc: device.acc
+    });
+
     marker.bindPopup(
       `<strong>${device.name}</strong><br>` +
       `Battery: ${device.battPercent ?? "N/A"}<br>` +
@@ -77,6 +109,7 @@ function addOrUpdateMarker(orgName, device) {
         fillColor: "#3f51b5",
         fillOpacity: 0.2
       });
+
       circle.addTo(orgLayers[orgName]);
       marker.circle = circle;
     }
