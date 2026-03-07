@@ -6,7 +6,7 @@ let currentTime = 0
 let timer = null
 let speed = 10
 
-const API = "http://atlas-demo.t2k.group/demo"
+const API = "https://atlas-demo.t2k.group/demo"
 
 const timeTicker = document.querySelector(".time-ticker")
 
