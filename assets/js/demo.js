@@ -91,6 +91,17 @@ function addOrUpdateMarker(orgName, device) {
 
   const markers = orgMarkers[orgName]
   let marker = markers[device.name]
+  const svgIcon = L.divIcon({
+      html: `
+          <svg viewBox="0 0 80 100" width="30" height="30" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path fill="#a6e3a1" fill-opacity="0.7" d="M 0 0 L 80 0 L 80 60 L 40 100 L 0 60 L 0 0"/>
+              <text x="40" y="30" fill="#000000" text-anchor="middle" dominant-baseline="central" font-weight="bolder" font-size="3em">${device.name}</text>
+          </svg>
+      `,
+      className: "svg-icon",
+      iconSize: [30, 30],
+      iconAnchor: [15, 30]
+  });
 
   if (marker) {
     marker.setLatLng([device.lat, device.lon])
@@ -104,14 +115,15 @@ function addOrUpdateMarker(orgName, device) {
       marker.circle.setRadius(device.acc || 0)
     }
   } else {
-    marker = L.marker([device.lat, device.lon], { icon: smallDeviceIcon })
+    marker = L.marker([device.lat, device.lon], { icon: svgIcon })
     marker.bindPopup(
       `<strong>${device.name}</strong><br>
        Battery: ${device.battPercent ?? "N/A"}<br>
        Last Seen: ${new Date(device.lastSeen).toLocaleString()}`
     )
-
+    /*
     if (device.acc) {
+      
       const circle = L.circle([device.lat, device.lon], {
         radius: device.acc,
         color: "blue",
@@ -120,6 +132,7 @@ function addOrUpdateMarker(orgName, device) {
       }).addTo(orgLayers[orgName])
       marker.circle = circle
     }
+      */
 
     marker.addTo(orgLayers[orgName])
     markers[device.name] = marker
