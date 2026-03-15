@@ -494,6 +494,29 @@ async function renderDevicesTable() {
       });
     }
   }
+
+  applyDeviceSearch();
+}
+
+function applyDeviceSearch() {
+  const query = (document.getElementById("device-search")?.value || "").toLowerCase().trim();
+
+  document.querySelectorAll("#device-container tr[data-device]").forEach(row => {
+    const match = !query || row.dataset.device.toLowerCase().includes(query);
+    row.style.display = match ? "" : "none";
+  });
+
+  // Hide site sections with no visible rows
+  document.querySelectorAll("#device-container [id^='site-']").forEach(section => {
+    const hasVisible = Array.from(section.querySelectorAll("tbody tr")).some(r => r.style.display !== "none");
+    section.style.display = hasVisible ? "" : "none";
+  });
+
+  // Hide org cards with no visible site sections
+  document.querySelectorAll("#device-container [id^='org-']").forEach(card => {
+    const hasVisible = Array.from(card.querySelectorAll("[id^='site-']")).some(s => s.style.display !== "none");
+    card.style.display = hasVisible ? "" : "none";
+  });
 }
 
 function updateLastSeenTimes() {
@@ -712,7 +735,10 @@ document.getElementById("mgmt-save").addEventListener("click", async () => {
       statusEl.textContent = "Saved";
       statusEl.className = "ms-2 small text-success";
       await fetchAndSaveAtlasData(true);
-      renderDevicesTable();
+      // Clear container and state so moved devices don't linger in old org/site
+      document.getElementById("device-container").innerHTML = "";
+      Object.keys(lastDeviceState).forEach(k => delete lastDeviceState[k]);
+      await renderDevicesTable();
     } else {
       statusEl.textContent = data.message || "Failed";
       statusEl.className = "ms-2 small text-danger";
@@ -725,6 +751,8 @@ document.getElementById("mgmt-save").addEventListener("click", async () => {
 });
 
 async function init(){
+  document.getElementById("device-search")?.addEventListener("input", applyDeviceSearch);
+
   await renderDevicesTable();
   await fetchAndSaveAtlasData(true);
 
