@@ -455,6 +455,7 @@ function initMapEditor(site) {
             if (!response.ok || !result.status) throw new Error(result.message || "Update failed");
             
             showToast("Site Deleted Sucessfully")
+            initSites()
 
         }
          catch (err) {
