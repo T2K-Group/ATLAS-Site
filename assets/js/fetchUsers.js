@@ -1,14 +1,15 @@
 /* ----------------------------------------------------
    Authenticated fetch for users
 ---------------------------------------------------- */
-async function fetchUsersWithAuth() {
-  function getCookie(name) {
-    return document.cookie
-      .split("; ")
-      .find(row => row.startsWith(name + "="))
-      ?.split("=")[1];
-  }
 
+function getCookie(name) {
+  return document.cookie
+    .split("; ")
+    .find(row => row.startsWith(name + "="))
+    ?.split("=")[1];
+}
+
+async function fetchUsersWithAuth() {
   const token = getCookie("session_id");
   if (!token) return null;
 
@@ -247,13 +248,6 @@ document.addEventListener("click", async function (e) {
 });
 
 async function updateUsersBulk(updatesObject) {
-  function getCookie(name) {
-    return document.cookie
-      .split("; ")
-      .find(row => row.startsWith(name + "="))
-      ?.split("=")[1];
-  }
-
   const token = getCookie("session_id");
   if (!token) return false;
 

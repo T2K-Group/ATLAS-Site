@@ -5,36 +5,14 @@ let locationModal = null;
 let settingsModal = null;
 
 
-// -------------------------
-// IndexedDB Helper
-// -------------------------
-function openDB() {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open("DevicesDB", 2); // bumped version
-
-    request.onupgradeneeded = event => {
-      const db = event.target.result;
-
-      if (!db.objectStoreNames.contains("orgs")) {
-        db.createObjectStore("orgs", { keyPath: "orgId" });
-      }
-
-      if (!db.objectStoreNames.contains("sites")) {
-        const siteStore = db.createObjectStore("sites", { keyPath: "id" });
-        siteStore.createIndex("orgId", "orgId", { unique: false });
-      }
-
-      if (!db.objectStoreNames.contains("devices")) {
-        const deviceStore = db.createObjectStore("devices", { keyPath: "name" });
-        deviceStore.createIndex("orgId", "orgId", { unique: false });
-        deviceStore.createIndex("siteId", "siteId", { unique: false, multiEntry: true });
-      }
-    };
-
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error);
-  });
+function getCookie(name) {
+  return document.cookie
+    .split("; ")
+    .find(row => row.startsWith(name + "="))
+    ?.split("=")[1];
 }
+
+
 
 async function saveApiDataToDB(apiData) {
   const db = await openDB();
@@ -163,13 +141,6 @@ async function getDevicesFromDB() {
 // Fetch Devices API
 // -------------------------
 async function fetchAndSaveAtlasData(forceFull = false) {
-  function getCookie(name) {
-    return document.cookie
-      .split("; ")
-      .find(row => row.startsWith(name + "="))
-      ?.split("=")[1];
-  }
-
   const token = getCookie("session_id");
   if (!token) {
     console.error("No session_id cookie found!");
@@ -231,13 +202,6 @@ function startDevicePolling() {
 }
 
 async function fetchAndUpdateDevices() {
-  function getCookie(name) {
-    return document.cookie
-      .split("; ")
-      .find(row => row.startsWith(name + "="))
-      ?.split("=")[1];
-  }
-
   const token = getCookie("session_id");
   if (!token) return;
 

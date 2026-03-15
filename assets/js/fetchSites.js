@@ -2,6 +2,13 @@ let addSiteMap, addSiteMarker, addSiteCircle;
 let currentDrawnLayer = null;
 let addSiteDrawnLayer = null;
 
+function getCookie(name) {
+  return document.cookie
+    .split("; ")
+    .find(row => row.startsWith(name + "="))
+    ?.split("=")[1];
+}
+
 async function fetchPostcodeLatLon(postcode) {
     try {
         const response = await fetch(`https://postcodes.t2k.group/postcode/${encodeURIComponent(postcode)}`);
@@ -17,14 +24,6 @@ async function fetchPostcodeLatLon(postcode) {
 }
 
 async function fetchSitesWithAuth() {
-    // Helper to read cookies
-    function getCookie(name) {
-        return document.cookie
-            .split("; ")
-            .find(row => row.startsWith(name + "="))
-            ?.split("=")[1];
-    }
-
     const token = getCookie("session_id");
 
     if (!token) {
@@ -213,6 +212,10 @@ function renderSitesTable(apiResponse) {
                         <button class="btn ${toggleBtnClass} toggle-active-btn">
                             ${toggleBtnLabel}
                         </button>
+                        <button class="btn delete-btn">
+                            Delete
+                        </button>
+
                     </div>
                 </div>
             `;
@@ -317,6 +320,7 @@ function initMapEditor(site) {
     const container = document.getElementById(mapId).closest("td");
     const saveBtn = container.querySelector(".save-btn");
     const toggleBtn = container.querySelector(".toggle-active-btn");
+    const deleteBtn = container.querySelector(".delete-btn")
 
     const nameInput = container.querySelector(".site-name");
     const addressInput = container.querySelector(".site-address");
@@ -363,10 +367,7 @@ function initMapEditor(site) {
         };
 
         try {
-            const token = document.cookie
-                .split("; ")
-                .find(row => row.startsWith("session_id="))
-                ?.split("=")[1];
+            const token = getCookie("session_id");
 
             const response = await fetch("https://atlasapi.t2k.group/update/sites", {
                 method: "PATCH",
@@ -397,10 +398,7 @@ function initMapEditor(site) {
         const newActiveState = site.active ? 0 : 1;
 
         try {
-            const token = document.cookie
-                .split("; ")
-                .find(row => row.startsWith("session_id="))
-                ?.split("=")[1];
+            const token = getCookie("session_id");
 
             const response = await fetch("https://atlasapi.t2k.group/update/sites", {
                 method: "PATCH",
@@ -439,6 +437,33 @@ function initMapEditor(site) {
             showToast("Error toggling site status", "danger");
         }
     });
+
+    deleteBtn.addEventListener("click", async () => {
+
+        try {
+            const token = getCookie("session_id");
+
+            const response = await fetch(`https://atlasapi.t2k.group/delete/site?siteId=${site.id}`, {
+                method: "DELETE",
+                headers: {
+                    "Authorization": `Bearer ${token}`,
+                    "Content-Type": "application/json"
+                },
+            });
+
+            const result = await response.json();
+            if (!response.ok || !result.status) throw new Error(result.message || "Update failed");
+            
+            showToast("Site Deleted Sucessfully")
+
+        }
+         catch (err) {
+        console.error("Delete failed:", err);
+        showToast("Error Deleting site")
+    }
+
+    });
+
 
     setTimeout(() => map.invalidateSize(), 200);
 }
@@ -509,18 +534,6 @@ function openAddSiteModal(orgId, orgName) {
         setTimeout(() => addSiteMap.invalidateSize(), 200);
     });
 
-    // On save
-    const payload = {
-        org_id: parseInt(orgId),
-        name: name,
-        address: address,
-        postcode: postcode,
-        polygon_points: addSiteDrawnLayer
-            ? addSiteDrawnLayer.getLatLngs()[0].map(p => ({ lat: p.lat, lon: p.lng }))
-            : null,
-        active: active
-    };
-
 }
 
 
@@ -553,10 +566,7 @@ document.getElementById("create-site-btn").addEventListener("click", async () =>
     };
 
     try {
-        const token = document.cookie
-            .split("; ")
-            .find(row => row.startsWith("session_id="))
-            ?.split("=")[1];
+        const token = getCookie("session_id");
 
         const response = await fetch("https://atlasapi.t2k.group/create/sites", {
             method: "POST",
@@ -583,36 +593,5 @@ document.getElementById("create-site-btn").addEventListener("click", async () =>
 });
 
 
-function showToast(message, type = "success", duration = 3000) {
-    // type: "success", "danger", "info", "warning"
-    const container = document.getElementById("toast-container");
-    if (!container) return;
-
-    const toastId = `toast-${Date.now()}`;
-
-    const toastEl = document.createElement("div");
-    toastEl.id = toastId;
-    toastEl.className = `toast align-items-center text-bg-${type} border-0`;
-    toastEl.setAttribute("role", "alert");
-    toastEl.setAttribute("aria-live", "assertive");
-    toastEl.setAttribute("aria-atomic", "true");
-
-    toastEl.innerHTML = `
-        <div class="d-flex">
-            <div class="toast-body">${message}</div>
-            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
-        </div>
-    `;
-
-    container.appendChild(toastEl);
-
-    const toast = new bootstrap.Toast(toastEl, { delay: duration });
-    toast.show();
-
-    // Remove from DOM when hidden
-    toastEl.addEventListener("hidden.bs.toast", () => {
-        toastEl.remove();
-    });
-}
 
 initSites();
