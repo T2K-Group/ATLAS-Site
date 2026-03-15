@@ -3,6 +3,8 @@ let map = null;
 let mapMarker = null;
 let locationModal = null;
 let settingsModal = null;
+let currentUserRole = 0;
+let settingsCurrentDevice = null;
 
 
 function getCookie(name) {
@@ -14,53 +16,24 @@ function getCookie(name) {
 
 function openDB() {
   return new Promise((resolve, reject) => {
-    const request = indexedDB.open("DevicesDB", 2);
+    const request = indexedDB.open("DevicesDB", 3);
 
     request.onupgradeneeded = event => {
       const db = event.target.result;
 
-      if (!db.objectStoreNames.contains("orgs")) {
-        db.createObjectStore("orgs", { keyPath: "orgId" });
-      }
+      // Drop and recreate stores to clear stale cached data
+      ["orgs", "sites", "devices"].forEach(name => {
+        if (db.objectStoreNames.contains(name)) db.deleteObjectStore(name);
+      });
 
-      if (!db.objectStoreNames.contains("sites")) {
-        const siteStore = db.createObjectStore("sites", { keyPath: "id" });
-        siteStore.createIndex("orgId", "orgId", { unique: false });
-      }
+      db.createObjectStore("orgs", { keyPath: "orgId" });
 
-      if (!db.objectStoreNames.contains("devices")) {
-        const deviceStore = db.createObjectStore("devices", { keyPath: "name" });
-        deviceStore.createIndex("orgId", "orgId", { unique: false });
-        deviceStore.createIndex("siteId", "siteId", { unique: false, multiEntry: true });
-      }
-    };
+      const siteStore = db.createObjectStore("sites", { keyPath: "id" });
+      siteStore.createIndex("orgId", "orgId", { unique: false });
 
-    request.onsuccess = () => resolve(request.result);
-    request.onerror = () => reject(request.error);
-  });
-}
-
-function openDB() {
-  return new Promise((resolve, reject) => {
-    const request = indexedDB.open("DevicesDB", 2);
-
-    request.onupgradeneeded = event => {
-      const db = event.target.result;
-
-      if (!db.objectStoreNames.contains("orgs")) {
-        db.createObjectStore("orgs", { keyPath: "orgId" });
-      }
-
-      if (!db.objectStoreNames.contains("sites")) {
-        const siteStore = db.createObjectStore("sites", { keyPath: "id" });
-        siteStore.createIndex("orgId", "orgId", { unique: false });
-      }
-
-      if (!db.objectStoreNames.contains("devices")) {
-        const deviceStore = db.createObjectStore("devices", { keyPath: "name" });
-        deviceStore.createIndex("orgId", "orgId", { unique: false });
-        deviceStore.createIndex("siteId", "siteId", { unique: false, multiEntry: true });
-      }
+      const deviceStore = db.createObjectStore("devices", { keyPath: "name" });
+      deviceStore.createIndex("orgId", "orgId", { unique: false });
+      deviceStore.createIndex("siteId", "siteId", { unique: false, multiEntry: true });
     };
 
     request.onsuccess = () => resolve(request.result);
@@ -501,7 +474,7 @@ async function renderDevicesTable() {
           };
 
           settingsCell.querySelector("button").onclick = () => {
-            openDeviceSettings(dev)
+            openDeviceSettings(lastDeviceState[key]);
           };
         }
 
@@ -600,9 +573,63 @@ function formatTimestamp(ts) {
 }
 
 
-function openDeviceSettings(dev) {
+async function getSitesByOrg(orgId) {
+  const db = await openDB();
+  const tx = db.transaction("sites", "readonly");
+  const index = tx.objectStore("sites").index("orgId");
+  return new Promise((resolve, reject) => {
+    const req = index.getAll(String(orgId));
+    req.onsuccess = () => resolve(req.result || []);
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function populateMgmtOrgs(selectedOrgId) {
+  const db = await openDB();
+  const tx = db.transaction("orgs", "readonly");
+  const orgs = await new Promise((res, rej) => {
+    const req = tx.objectStore("orgs").getAll();
+    req.onsuccess = () => res(req.result || []);
+    req.onerror = () => rej(req.error);
+  });
+
+  const orgSelect = document.getElementById("mgmt-org");
+  orgSelect.innerHTML = '<option value="">-- Select Org --</option>';
+  orgs.forEach(org => {
+    const opt = document.createElement("option");
+    opt.value = org.orgId;
+    opt.textContent = org.orgName;
+    if (String(org.orgId) === String(selectedOrgId)) opt.selected = true;
+    orgSelect.appendChild(opt);
+  });
+}
+
+async function populateMgmtSites(orgId, selectedSiteId) {
+  const siteSelect = document.getElementById("mgmt-site");
+
+  if (!orgId) {
+    siteSelect.innerHTML = '<option value="">-- Select Org First --</option>';
+    siteSelect.disabled = true;
+    return;
+  }
+
+  const sites = await getSitesByOrg(orgId);
+  siteSelect.innerHTML = '<option value="0">-- No Site --</option>';
+  sites.forEach(site => {
+    const opt = document.createElement("option");
+    opt.value = site.id;
+    opt.textContent = site.name;
+    if (String(site.id) === String(selectedSiteId)) opt.selected = true;
+    siteSelect.appendChild(opt);
+  });
+  siteSelect.disabled = false;
+}
+
+async function openDeviceSettings(dev) {
   const el = document.getElementById("settingsModal");
   if (!settingsModal) settingsModal = new bootstrap.Modal(el);
+
+  settingsCurrentDevice = dev;
 
   // Device name
   document.getElementById("deviceName").textContent = dev.name;
@@ -630,14 +657,92 @@ function openDeviceSettings(dev) {
   document.getElementById("atSite").textContent = `At Site: ${dev.atSite && dev.atSite.length ? dev.atSite.join(", ") : "N/A"}`;
   document.getElementById("lastSeen").textContent = `Last Seen: ${formatTimestamp(dev.lastSeen)}`;
 
-  // Show modal
+  // Device Management section (role >= 2 only)
+  const mgmtSection = document.getElementById("deviceMgmtSection");
+  if (currentUserRole >= 2) {
+    mgmtSection.hidden = false;
+    document.getElementById("mgmt-name").value = dev.name || "";
+    document.getElementById("mgmt-status").textContent = "";
+
+    await populateMgmtOrgs(dev.orgId);
+    await populateMgmtSites(dev.orgId, dev.siteId);
+
+    // Re-wire org change → update sites dropdown
+    const orgSelect = document.getElementById("mgmt-org");
+    orgSelect.onchange = () => populateMgmtSites(orgSelect.value, null);
+  } else {
+    mgmtSection.hidden = true;
+  }
+
   settingsModal.show();
 }
 
+document.getElementById("mgmt-save").addEventListener("click", async () => {
+  console.log("saving")
+  const dev = settingsCurrentDevice;
+  if (!dev || !dev.deviceId) return;
+
+  const token = getCookie("session_id");
+  const statusEl = document.getElementById("mgmt-status");
+
+  const name = document.getElementById("mgmt-name").value.trim() || null;
+  const orgId = document.getElementById("mgmt-org").value;
+  const siteId = document.getElementById("mgmt-site").value;
+
+  const body = {};
+  if (name !== null) body.name = name;
+  if (orgId !== "") body.org_id = parseInt(orgId);
+  if (siteId !== "") body.site_id = parseInt(siteId);
+
+  statusEl.textContent = "Saving...";
+  statusEl.className = "ms-2 small text-muted";
+
+  try {
+    const res = await fetch(`https://atlasapi.t2k.group/update/device/${dev.deviceId}`, {
+      method: "PATCH",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(body)
+    });
+
+    const data = await res.json();
+    if (data.status) {
+      statusEl.textContent = "Saved";
+      statusEl.className = "ms-2 small text-success";
+      await fetchAndSaveAtlasData(true);
+      renderDevicesTable();
+    } else {
+      statusEl.textContent = data.message || "Failed";
+      statusEl.className = "ms-2 small text-danger";
+    }
+  } catch (err) {
+    statusEl.textContent = "Error";
+    statusEl.className = "ms-2 small text-danger";
+    console.error(err);
+  }
+});
+
 async function init(){
-  await renderDevicesTable()
-  await fetchAndSaveAtlasData(true)
-  await renderDevicesTable()
+  await renderDevicesTable();
+  await fetchAndSaveAtlasData(true);
+
+  // Fetch user role for admin features
+  const token = getCookie("session_id");
+  if (token) {
+    try {
+      const res = await fetch("https://atlasapi.t2k.group/whoami", {
+        headers: { "Authorization": `Bearer ${token}` }
+      });
+      const data = await res.json();
+      if (data.status) currentUserRole = data.data.role ?? 0;
+    } catch (e) {
+      console.warn("Could not fetch user role", e);
+    }
+  }
+
+  await renderDevicesTable();
   startDevicePolling();
   // Update every second
   setInterval(updateLastSeenTimes, 1000);

@@ -241,6 +241,35 @@
 			  </div>
 			</div>
 		  </div>
+
+		  <!-- Device Management (admin only) -->
+		  <div class="row" id="deviceMgmtSection" hidden>
+			<div class="col-12 mb-3">
+			  <div class="card border-secondary">
+				<div class="card-header bg-secondary text-white">Device Management</div>
+				<div class="card-body">
+				  <div class="mb-2">
+					<label class="form-label mb-1 small">Name</label>
+					<input type="text" id="mgmt-name" class="form-control form-control-sm">
+				  </div>
+				  <div class="mb-2">
+					<label class="form-label mb-1 small">Organisation</label>
+					<select id="mgmt-org" class="form-select form-select-sm">
+					  <option value="">-- Select Org --</option>
+					</select>
+				  </div>
+				  <div class="mb-2">
+					<label class="form-label mb-1 small">Site</label>
+					<select id="mgmt-site" class="form-select form-select-sm" disabled>
+					  <option value="">-- No Site --</option>
+					</select>
+				  </div>
+				  <button id="mgmt-save" class="btn btn-sm btn-primary">Save</button>
+				  <span id="mgmt-status" class="ms-2 small"></span>
+				</div>
+			  </div>
+			</div>
+		  </div>
 		</div>
 	  </div>
 	</div>
