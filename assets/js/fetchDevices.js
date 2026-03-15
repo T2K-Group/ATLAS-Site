@@ -12,6 +12,63 @@ function getCookie(name) {
     ?.split("=")[1];
 }
 
+function openDB() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open("DevicesDB", 2);
+
+    request.onupgradeneeded = event => {
+      const db = event.target.result;
+
+      if (!db.objectStoreNames.contains("orgs")) {
+        db.createObjectStore("orgs", { keyPath: "orgId" });
+      }
+
+      if (!db.objectStoreNames.contains("sites")) {
+        const siteStore = db.createObjectStore("sites", { keyPath: "id" });
+        siteStore.createIndex("orgId", "orgId", { unique: false });
+      }
+
+      if (!db.objectStoreNames.contains("devices")) {
+        const deviceStore = db.createObjectStore("devices", { keyPath: "name" });
+        deviceStore.createIndex("orgId", "orgId", { unique: false });
+        deviceStore.createIndex("siteId", "siteId", { unique: false, multiEntry: true });
+      }
+    };
+
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+function openDB() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open("DevicesDB", 2);
+
+    request.onupgradeneeded = event => {
+      const db = event.target.result;
+
+      if (!db.objectStoreNames.contains("orgs")) {
+        db.createObjectStore("orgs", { keyPath: "orgId" });
+      }
+
+      if (!db.objectStoreNames.contains("sites")) {
+        const siteStore = db.createObjectStore("sites", { keyPath: "id" });
+        siteStore.createIndex("orgId", "orgId", { unique: false });
+      }
+
+      if (!db.objectStoreNames.contains("devices")) {
+        const deviceStore = db.createObjectStore("devices", { keyPath: "name" });
+        deviceStore.createIndex("orgId", "orgId", { unique: false });
+        deviceStore.createIndex("siteId", "siteId", { unique: false, multiEntry: true });
+      }
+    };
+
+    request.onsuccess = () => resolve(request.result);
+    request.onerror = () => reject(request.error);
+  });
+}
+
+
 
 
 async function saveApiDataToDB(apiData) {

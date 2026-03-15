@@ -1,13 +1,14 @@
-(async function checkAuth() {
-    console.info("check auth running");
-  
+
     function getCookie(name) {
       return document.cookie
         .split("; ")
         .find(row => row.startsWith(name + "="))
         ?.split("=")[1];
     }
-  
+
+(async function checkAuth() {
+    //console.info("check auth running");
+
     const sessionId = getCookie("session_id");
   
     if (!sessionId) {
