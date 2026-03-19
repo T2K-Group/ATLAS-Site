@@ -6,6 +6,17 @@ let settingsModal = null;
 let currentUserRole = 0;
 let settingsCurrentDevice = null;
 
+function formatLocationType(type) {
+  const map = {
+    0: "GPS",
+    1: "WiFi",
+    2: "Multi-cell",
+    3: "Single-cell"
+  };
+
+  return map[type] ?? "Unknown";
+}
+
 
 function getCookie(name) {
   return document.cookie
@@ -16,7 +27,7 @@ function getCookie(name) {
 
 function openDB() {
   return new Promise((resolve, reject) => {
-    const request = indexedDB.open("DevicesDB", 3);
+    const request = indexedDB.open("DevicesDB", 4);
 
     request.onupgradeneeded = event => {
       const db = event.target.result;
@@ -31,9 +42,10 @@ function openDB() {
       const siteStore = db.createObjectStore("sites", { keyPath: "id" });
       siteStore.createIndex("orgId", "orgId", { unique: false });
 
-      const deviceStore = db.createObjectStore("devices", { keyPath: "name" });
+      const deviceStore = db.createObjectStore("devices", { keyPath: "deviceId" });
       deviceStore.createIndex("orgId", "orgId", { unique: false });
       deviceStore.createIndex("siteId", "siteId", { unique: false, multiEntry: true });
+      deviceStore.createIndex("name", "name", { unique: false }); // if you still search by name
     };
 
     request.onsuccess = () => resolve(request.result);
@@ -395,7 +407,7 @@ async function renderDevicesTable() {
       const activeRows = new Set();
 
       site.devices.forEach(dev => {
-        const key = `${orgId}_${siteId}_${dev.name}`;
+        const key = `${dev.deviceId}`;
         activeRows.add(dev.name);
 
         let row = tbody.querySelector(`tr[data-device="${dev.name}"]`);
@@ -677,6 +689,7 @@ async function openDeviceSettings(dev) {
   document.getElementById("lat").textContent = `Latitude: ${getValue(dev.lat)}`;
   document.getElementById("lon").textContent = `Longitude: ${getValue(dev.lon)}`;
   document.getElementById("accuracy").textContent = `Accuracy: ${getValue(dev.acc)} meters`;
+  document.getElementById("loctype").textContent = `Location Type: ${formatLocationType(dev.locationType)}`; // 0 = gps, 1 = wifi, 2 = multicell, 3 = singlecell
   document.getElementById("atSite").textContent = `At Site: ${dev.atSite && dev.atSite.length ? dev.atSite.join(", ") : "N/A"}`;
   document.getElementById("lastSeen").textContent = `Last Seen: ${formatTimestamp(dev.lastSeen)}`;
 
@@ -750,9 +763,23 @@ document.getElementById("mgmt-save").addEventListener("click", async () => {
   }
 });
 
+async function clearDatabase() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.deleteDatabase("DevicesDB");
+    req.onsuccess = () => resolve();
+    req.onerror = () => reject(req.error);
+    req.onblocked = () => console.warn("DB delete blocked");
+  });
+}
+
 async function init(){
+
+  await clearDatabase();
+  localStorage.removeItem("delta_ts");
+
   document.getElementById("device-search")?.addEventListener("input", applyDeviceSearch);
 
+  
   await renderDevicesTable();
   await fetchAndSaveAtlasData(true);
 
