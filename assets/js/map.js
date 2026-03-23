@@ -11,15 +11,20 @@ document.addEventListener("DOMContentLoaded", async () => {
   map = L.map("map", { zoomControl: true, fullscreenControl: true }).setView([54.5, -3], 6);
 
   // Base maps
-  const osmLayer = L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+  const osmLayer = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution: "© OpenStreetMap contributors"
   }).addTo(map);
 
-  const satLayer = L.tileLayer("https://{s}.tile.openstreetmap.fr/hot/{z}/{x}/{y}.png", {
-    attribution: "© OpenStreetMap contributors"
+
+  const satLayer = L.tileLayer("https://khms0.google.com/kh/v=1008?x={x}&y={y}&z={z}", {
+    attribution: "© Google Maps"
   });
 
-  const baseMaps = { "OpenStreetMap": osmLayer, "Satellite": satLayer };
+  const darkLayer = L.tileLayer("https://cartodb-basemaps-{s}.global.ssl.fastly.net/dark_all/{z}/{x}/{y}.png", {
+    attribution: "© Map tiles by Carto, under CC BY 3.0. Data by OpenStreetMap, under ODbL."
+  });
+
+  const baseMaps = { "OpenStreetMap": osmLayer, "Satellite": satLayer, "Dark Mode" : darkLayer };
   const overlayMaps = {};
   const layerControl = L.control.layers(baseMaps, overlayMaps, { collapsed: true }).addTo(map);
 
