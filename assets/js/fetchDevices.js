@@ -457,7 +457,13 @@ async function renderDevicesTable() {
           !prev ||
           prev.battPercent !== dev.battPercent
         ) {
-          row.querySelector(".dev-name").textContent = dev.name;
+
+          let connected;
+
+          const svgClass = dev.connected == 1 ? 'text-success' : 'text-danger';
+          connected = `<svg class="${svgClass}" style="width:1em;height:1em;fill:currentColor;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"><path d="M320 576C461.4 576 576 461.4 576 320C576 178.6 461.4 64 320 64C178.6 64 64 178.6 64 320C64 461.4 178.6 576 320 576zM320 224C373 224 416 267 416 320C416 373 373 416 320 416C267 416 224 373 224 320C224 267 267 224 320 224z"/></svg>`;
+
+          row.querySelector(".dev-name").innerHTML = `${connected} <span>${dev.name}</span>`;
 
           const battCell = row.querySelector(".dev-batt");
 
