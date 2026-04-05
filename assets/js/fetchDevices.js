@@ -17,6 +17,29 @@ function formatLocationType(type) {
   return map[type] ?? "Unknown";
 }
 
+function formatOperationType(type) {
+  const map = {
+    0: "Sleep",
+    1: "Active",
+    2: "Alert",
+  };
+
+  return map[type] ?? "Unknown";
+}
+
+function formatTrackType(type) {
+  const map = {
+    0: "WiFi First",
+    1: "GPS First",
+    2: "Mapping",
+  };
+
+  return map[type] ?? "Unknown";
+}
+
+
+
+
 
 function getCookie(name) {
   return document.cookie
@@ -684,6 +707,27 @@ async function openDeviceSettings(dev) {
   document.getElementById("tac").textContent = `TAC: ${dev.tac ?? "N/A"}`;
   document.getElementById("band").textContent = `Band: ${dev.band ?? "N/A"}`;
   document.getElementById("cellId").textContent = `Cell ID: ${dev.cellId ?? "N/A"}`;
+  document.getElementById("imei").textContent = `IMEI: ${dev.imei ?? "N/A"}`;
+  document.getElementById("iccid").textContent = `ICCID: ${dev.iccid ?? "N/A"}`;
+  document.getElementById("imsi").textContent = `IMSI: ${dev.imsi ?? "N/A"}`;
+
+  //Device Info
+  document.getElementById("fwv").textContent = `Firmware Version: ${dev.fwv ?? "N/A"}`;
+  document.getElementById("mfw").textContent = `Modem FW Version: ${dev.mfw ?? "N/A"}`;
+  document.getElementById("branch").textContent = `Branch: ${dev.branch ?? "N/A"}`;
+  document.getElementById("build").textContent = `Build: ${dev.build ?? "N/A"}`;
+  document.getElementById("buildDate").textContent = `Build Date: ${dev.buildDate ?? "N/A"}`;
+
+  //Device Settings
+  document.getElementById("opMode").textContent = `Operation Mode: ${formatOperationType(dev.operationMode) ?? "N/A"}`;
+  document.getElementById("trackMode").textContent = `Tracking Mode: ${formatTrackType(dev.trackingMode) ?? "N/A"}`;
+  document.getElementById("trackInt").textContent = `Tracking Interval: ${dev.TrackIntervalSec ?? "N/A"} secs`;
+  document.getElementById("statusInt").textContent = `Status Interval: ${dev.statusIntervalMins ?? "N/A"} mins`;
+  document.getElementById("sleepInt").textContent = `Sleep Interval: ${dev.deepSleepIntervalMins ?? "N/A"} mins`;
+  document.getElementById("sleepConnTry").textContent = `Sleep Connection Try: ${dev.sleepConnTry ?? "N/A"} mins`;
+  document.getElementById("sleepConnInt").textContent = `Sleep Connection Timer: ${dev.sleepConnTimerMins ?? "N/A"} mins`;
+
+
 
   // Location Info
   document.getElementById("lat").textContent = `Latitude: ${getValue(dev.lat)}`;

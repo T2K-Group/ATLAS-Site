@@ -198,9 +198,10 @@
 		  <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
 		</div>
 		<div class="modal-body">
+
 		  <div class="row">
 			<!-- Battery Info -->
-			<div class="col-md-6 mb-3">
+			<div class="col-12">
 			  <div class="card border-warning">
 				<div class="card-header bg-warning text-dark">Battery Info</div>
 				<div class="card-body">
@@ -214,9 +215,11 @@
 				</div>
 			  </div>
 			</div>
+			</div>
   
 			<!-- Cell Info -->
-			<div class="col-md-6 mb-3">
+			<div class="row">
+			<div class="col-12 la-hide" hidden>
 			  <div class="card border-info">
 				<div class="card-header bg-info text-white">Cell Info</div>
 				<div class="card-body">
@@ -226,11 +229,16 @@
 					<li id="tac"></li>
 					<li id="band"></li>
 					<li id="cellId"></li>
+					<li id="imei"></li>
+					<li id="iccid"></li>
+					<li id="imsi"></li>
+					<li id="status"></li>
 				  </ul>
 				</div>
 			  </div>
 			</div>
 		  </div>
+
   
 		  <!-- Location Info -->
 		  <div class="row">
@@ -245,6 +253,44 @@
 					<li id="loctype"></li>
 					<li id="atSite"></li>
 					<li id="lastSeen"></li>
+				  </ul>
+				</div>
+			  </div>
+			</div>
+		  </div>
+
+		  <!-- Device Info -->
+		  <div class="row la-hide" hidden>
+			<div class="col-12 mb-3">
+			  <div class="card border-danger">
+				<div class="card-header bg-danger text-white">Device Info</div>
+				<div class="card-body">
+				  <ul class="list-unstyled mb-0">
+					<li id="fwv"></li>
+					<li id="mfw"></li>
+					<li id="build"></li>
+					<li id="buildDate"></li>
+					<li id="branch"></li>
+				  </ul>
+				</div>
+			  </div>
+			</div>
+		  </div>
+
+		  <!-- Device Settings -->
+		  <div class="row la-hide" hidden>
+			<div class="col-12 mb-3">
+			  <div class="card border-primary">
+				<div class="card-header bg-primary text-white">Device Settings</div>
+				<div class="card-body">
+				  <ul class="list-unstyled mb-0">
+					<li id="opMode"></li>
+					<li id="trackMode"></li>
+					<li id="statusInt"></li>
+					<li id="trackInt"></li>
+					<li id="sleepInt"></li>
+					<li id="sleepConnTry"></li>
+					<li id="sleepConnInt"></li>
 				  </ul>
 				</div>
 			  </div>
