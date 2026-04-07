@@ -743,6 +743,7 @@ async function openDeviceSettings(dev) {
   document.getElementById("loctype").textContent = `Location Type: ${formatLocationType(dev.locationType)}`; // 0 = gps, 1 = wifi, 2 = multicell, 3 = singlecell
   document.getElementById("atSite").textContent = `At Site: ${dev.atSite && dev.atSite.length ? dev.atSite.join(", ") : "No"}`;
   document.getElementById("lastLoc").textContent = `Last Location: ${formatTimestamp(dev.lastLocation)}`;
+  document.getElementById("lastSeen").textContent = `Last Seen: ${formatTimestamp(dev.lastSeen)}`;
 
   // Device Management section (role >= 2 only)
   const mgmtSection = document.getElementById("deviceMgmtSection");
