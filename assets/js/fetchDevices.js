@@ -11,7 +11,8 @@ function formatLocationType(type) {
     0: "GPS",
     1: "WiFi",
     2: "Multi-cell",
-    3: "Single-cell"
+    3: "Single-cell",
+    4: "Hybrid (WiFi + Cell)"
   };
 
   return map[type] ?? "Unknown";
