@@ -11,7 +11,8 @@ function formatLocationType(type) {
     0: "GPS",
     1: "WiFi",
     2: "Multi-cell",
-    3: "Single-cell"
+    3: "Single-cell",
+    4: "Hybrid (WiFi + Cell)"
   };
 
   return map[type] ?? "Unknown";
@@ -748,7 +749,8 @@ async function openDeviceSettings(dev) {
   document.getElementById("lon").textContent = `Longitude: ${getValue(dev.lon)}`;
   document.getElementById("accuracy").textContent = `Accuracy: ${getValue(dev.acc)} meters`;
   document.getElementById("loctype").textContent = `Location Type: ${formatLocationType(dev.locationType)}`; // 0 = gps, 1 = wifi, 2 = multicell, 3 = singlecell
-  document.getElementById("atSite").textContent = `At Site: ${dev.atSite && dev.atSite.length ? dev.atSite.join(", ") : "N/A"}`;
+  document.getElementById("atSite").textContent = `At Site: ${dev.atSite && dev.atSite.length ? dev.atSite.join(", ") : "No"}`;
+  document.getElementById("lastLoc").textContent = `Last Location: ${formatTimestamp(dev.lastLocation)}`;
   document.getElementById("lastSeen").textContent = `Last Seen: ${formatTimestamp(dev.lastSeen)}`;
 
   // Device Management section (role >= 2 only)

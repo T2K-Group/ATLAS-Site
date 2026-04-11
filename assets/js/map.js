@@ -91,7 +91,7 @@ function addOrUpdateMarker(orgName, device) {
 
     if (marker.circle) {
       marker.circle.setLatLng([device.lat, device.lon]);
-      marker.circle.setRadius(device.acc || 0);
+      marker.circle.setRadius((device.acc *2) || 0);
     }
 
   } else {
