@@ -6,6 +6,110 @@ let settingsModal = null;
 let currentUserRole = 0;
 let settingsCurrentDevice = null;
 
+
+    function getCookie(name) {
+      return document.cookie
+        .split("; ")
+        .find(row => row.startsWith(name + "="))
+        ?.split("=")[1];
+    }
+
+async function checkAuth() {
+    //console.info("check auth running");
+
+    const sessionId = getCookie("session_id");
+  
+    if (!sessionId) {
+      window.location.href = "/login.html";
+      return;
+    }
+  
+    try {
+      const response = await fetch("https://atlasapi.t2k.group//whoami", {
+        method: "GET",
+        headers: {
+          "Authorization": `Bearer ${sessionId}`,
+          "Content-Type": "application/json"
+        }
+      });
+  
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}`);
+      }
+  
+      const result = await response.json();
+  
+      // Invalid token
+      if (!result.status) {
+        window.location.href = "/login.html";
+        return;
+      }
+  
+      const user = result.data;
+      console.log("Authenticated user:", user);
+  
+      // Account not activated
+      if (user.role === 0) {
+        document.body.innerHTML = `
+          <div style="
+            max-width: 420px;
+            margin: 10vh auto;
+            padding: 24px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            font-family: sans-serif;
+            text-align: center;
+          ">
+            ${user.orglogo ? `
+              <img src="${user.orglogo}"
+                   alt="${user.orgname}"
+                   style="max-width: 200px; margin-bottom: 16px;">
+            ` : ""}
+            <h2>Account Not Activated</h2>
+            <p><strong>${user.name}</strong></p>
+            <p>${user.orgname}</p>
+            <p style="margin-top: 16px;">
+              Your account has not been activated.<br>
+              Please contact your organisation’s admin or
+              <a href="mailto:atlas@t2k.group">atlas@t2k.group</a>.
+            </p>
+          </div>
+        `;
+        return;
+      }
+  
+      // Logged in and active → show org logo
+      const orgImg = document.getElementById("org-img");
+      if (orgImg && user.orglogo) {
+        orgImg.src = user.orglogo;
+        orgImg.removeAttribute("hidden");
+      }
+
+      // if role = 1 set anything with class user-hide to hidden
+      //if role = 2 set anything with class la-hide to hidden
+
+    if (user.role !== 1) {
+      document.querySelectorAll(".user-hide").forEach(el => {
+        el.hidden = false;
+      });
+    }
+
+    if (user.role > 2) {
+      document.querySelectorAll(".la-hide").forEach(el => {
+        el.hidden = false;
+      });
+    }
+  
+      // Optional: make user globally available
+      window.currentUser = user;
+  
+    } catch (err) {
+      console.error("Auth check failed:", err);
+      window.location.href = "/login.html";
+    }
+  };
+  
+
 function formatLocationType(type) {
   const map = {
     0: "GPS",
@@ -413,11 +517,11 @@ async function renderDevicesTable() {
               <thead class="table-light">
                 <tr class="device-table">
                   <th>Device</th>
-                  <th>IMEI</th>
+                  <th class="la-hide" hidden>IMEI</th>
                   <th>Location</th>
                   <th>Battery</th>
                   <th>Last Seen</th>
-                  <th>Settings</th>
+                  <th class="la-hide" hidden>Settings</th>
                 </tr>
               </thead>
               <tbody></tbody>
@@ -447,11 +551,11 @@ async function renderDevicesTable() {
 
           row.innerHTML = `
             <td class="dev-name"></td>
-            <td class="dev-imei"></td>
+            <td class="dev-imei la-hide" hidden></td>
             <td class="dev-location"></td>
             <td class="dev-batt"></td>
             <td class="dev-lastseen"></td>
-            <td class="dev-settings"></td>
+            <td class="dev-settings la-hide" hidden></td>
           `;
 
           tbody.appendChild(row);
@@ -471,8 +575,20 @@ async function renderDevicesTable() {
           const svgClass = dev.connected == 1 ? 'text-success' : 'text-danger';
           connected = `<svg class="${svgClass}" style="width:1em;height:1em;fill:currentColor;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"><path d="M320 576C461.4 576 576 461.4 576 320C576 178.6 461.4 64 320 64C178.6 64 64 178.6 64 320C64 461.4 178.6 576 320 576zM320 224C373 224 416 267 416 320C416 373 373 416 320 416C267 416 224 373 224 320C224 267 267 224 320 224z"/></svg>`;
 
+          const isConnectionPresent = dev.connected
+          if (typeof isConnectionPresent === "int"){
           row.querySelector(".dev-name").innerHTML = `${connected} <span>${dev.name}</span>`;
-          row.querySelector(".dev-imei").innerHTML = `${dev.imei.slice(-5)}`
+          } else {
+           row.querySelector(".dev-name").innerHTML = `<span>${dev.name}</span>` 
+          }
+        
+          const imei = dev.imei;
+
+          if (typeof imei === "string" && imei.length >= 5) {
+            row.querySelector(".dev-imei").textContent = imei.slice(-5);
+          } else {
+            row.querySelector(".dev-imei").textContent = "N/A";
+          }
 
           const battCell = row.querySelector(".dev-batt");
 
@@ -528,6 +644,9 @@ async function renderDevicesTable() {
           };
         }
 
+
+  
+
         // Always store state
         lastDeviceState[key] = dev;
 
@@ -546,6 +665,7 @@ async function renderDevicesTable() {
   }
 
   applyDeviceSearch();
+  checkAuth()
 }
 
 function applyDeviceSearch() {
