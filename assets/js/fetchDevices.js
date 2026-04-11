@@ -412,6 +412,7 @@ async function renderDevicesTable() {
               <thead class="table-light">
                 <tr class="device-table">
                   <th>Device</th>
+                  <th>IMEI</th>
                   <th>Location</th>
                   <th>Battery</th>
                   <th>Last Seen</th>
@@ -429,6 +430,10 @@ async function renderDevicesTable() {
       const tbody = siteSection.querySelector("tbody");
       const activeRows = new Set();
 
+      site.devices.sort((a, b) => {
+        return a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: "base" });
+      });
+
       site.devices.forEach(dev => {
         const key = `${dev.deviceId}`;
         activeRows.add(dev.name);
@@ -441,6 +446,7 @@ async function renderDevicesTable() {
 
           row.innerHTML = `
             <td class="dev-name"></td>
+            <td class="dev-imei"></td>
             <td class="dev-location"></td>
             <td class="dev-batt"></td>
             <td class="dev-lastseen"></td>
@@ -455,7 +461,8 @@ async function renderDevicesTable() {
         // Only update static data if changed
         if (
           !prev ||
-          prev.battPercent !== dev.battPercent
+          prev.battPercent !== dev.battPercent ||
+          prev.lastSeen !== dev.lastSeen
         ) {
 
           let connected;
@@ -464,6 +471,7 @@ async function renderDevicesTable() {
           connected = `<svg class="${svgClass}" style="width:1em;height:1em;fill:currentColor;" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640"><path d="M320 576C461.4 576 576 461.4 576 320C576 178.6 461.4 64 320 64C178.6 64 64 178.6 64 320C64 461.4 178.6 576 320 576zM320 224C373 224 416 267 416 320C416 373 373 416 320 416C267 416 224 373 224 320C224 267 267 224 320 224z"/></svg>`;
 
           row.querySelector(".dev-name").innerHTML = `${connected} <span>${dev.name}</span>`;
+          row.querySelector(".dev-imei").innerHTML = `${dev.imei.slice(-5)}`
 
           const battCell = row.querySelector(".dev-batt");
 
