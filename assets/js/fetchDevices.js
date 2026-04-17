@@ -522,6 +522,7 @@ async function renderDevicesTable() {
                   <th>Battery</th>
                   <th>Last Seen</th>
                   <th class="la-hide" hidden>Settings</th>
+                  <th class="la-hide" hidden>Locate</th>
                 </tr>
               </thead>
               <tbody></tbody>
@@ -556,6 +557,7 @@ async function renderDevicesTable() {
             <td class="dev-batt"></td>
             <td class="dev-lastseen"></td>
             <td class="dev-settings la-hide" hidden></td>
+            <td class="dev-locate la-hide" hidden></td>
           `;
 
           tbody.appendChild(row);
@@ -635,6 +637,14 @@ async function renderDevicesTable() {
             </button>
           `
 
+          const locateCell = row.querySelector(".dev-locate");
+
+          locateCell.innerHTML = `
+            <button class="btn btn-sm btn-outline-primary locate-device">
+              <i class="fa-solid fa-crosshairs"></i>
+            </button>
+          `;
+
           locCell.querySelector("button").onclick = () => {
             openDeviceMap(dev);
           };
@@ -642,7 +652,13 @@ async function renderDevicesTable() {
           settingsCell.querySelector("button").onclick = () => {
             openDeviceSettings(lastDeviceState[key]);
           };
+
+          locateCell.querySelector("button").onclick = async () => {
+          await sendLocateCommand(dev.imei);
+          };
         }
+
+
 
 
   
@@ -687,6 +703,35 @@ function applyDeviceSearch() {
     const hasVisible = Array.from(card.querySelectorAll("[id^='site-']")).some(s => s.style.display !== "none");
     card.style.display = hasVisible ? "" : "none";
   });
+}
+
+async function sendLocateCommand(imei) {
+  const token = getCookie("session_id");
+  if (!token) {
+    console.error("No session token");
+    return;
+  }
+
+  try {
+    const res = await fetch(`https://atlasapi.t2k.group/device/${imei}`, {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json"
+      }
+    });
+
+    const data = await res.json();
+
+    if (data.status) {
+      console.log(`Locate command sent to ${imei}`);
+    } else {
+      console.warn("Locate failed:", data.message);
+    }
+
+  } catch (err) {
+    console.error("Locate error:", err);
+  }
 }
 
 function updateLastSeenTimes() {
