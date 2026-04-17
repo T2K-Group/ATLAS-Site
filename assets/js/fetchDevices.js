@@ -713,7 +713,7 @@ async function sendLocateCommand(imei) {
   }
 
   try {
-    const res = await fetch(`https://atlasapi.t2k.group/device/${imei}`, {
+    const res = await fetch(`https://atlasapi.t2k.group/locate/device/${imei}`, {
       method: "GET",
       headers: {
         "Authorization": `Bearer ${token}`,
