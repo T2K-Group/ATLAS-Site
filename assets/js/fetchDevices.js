@@ -518,11 +518,13 @@ async function renderDevicesTable() {
                 <tr class="device-table">
                   <th>Device</th>
                   <th class="la-hide" hidden>IMEI</th>
+                  <th class="la-hide" hidden>Location Type</th>
                   <th>Location</th>
                   <th>Battery</th>
                   <th>Last Seen</th>
                   <th class="la-hide" hidden>Settings</th>
                   <th class="la-hide" hidden>Locate</th>
+                  <th class="la-hide" hidden>LED</th>
                 </tr>
               </thead>
               <tbody></tbody>
@@ -553,11 +555,13 @@ async function renderDevicesTable() {
           row.innerHTML = `
             <td class="dev-name"></td>
             <td class="dev-imei la-hide" hidden></td>
+            <td class="dev-loctype la-hide" hidden></td>
             <td class="dev-location"></td>
             <td class="dev-batt"></td>
             <td class="dev-lastseen"></td>
             <td class="dev-settings la-hide" hidden></td>
             <td class="dev-locate la-hide" hidden></td>
+            <td class="dev-led la-hide" hidden></td>
           `;
 
           tbody.appendChild(row);
@@ -645,6 +649,19 @@ async function renderDevicesTable() {
             </button>
           `;
 
+          const ledCell = row.querySelector(".dev-led");
+
+          ledCell.innerHTML = `
+            <button class="btn btn-sm btn-outline-primary locate-device">
+              <i class="fa-regular fa-lightbulb"></i>
+            </button>
+          `;
+
+          const loctypecell = row.querySelector(".dev-loctype");
+          loctypecell.innerHTML = `
+          ${formatLocationType(dev.locationType)}
+          `;
+
           locCell.querySelector("button").onclick = () => {
             openDeviceMap(dev);
           };
@@ -655,6 +672,10 @@ async function renderDevicesTable() {
 
           locateCell.querySelector("button").onclick = async () => {
           await sendLocateCommand(dev.imei);
+          };
+
+          ledCell.querySelector("button").onclick = async () => {
+          await sendLedCommand(dev.imei);
           };
         }
 
@@ -733,6 +754,36 @@ async function sendLocateCommand(imei) {
     console.error("Locate error:", err);
   }
 }
+
+async function sendLedCommand(imei) {
+  const token = getCookie("session_id");
+  if (!token) {
+    console.error("No session token");
+    return;
+  }
+
+  try {
+    const res = await fetch(`https://atlasapi.t2k.group/led/device/${imei}`, {
+      method: "GET",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+        "Content-Type": "application/json"
+      }
+    });
+
+    const data = await res.json();
+
+    if (data.status) {
+      console.log(`Locate command sent to ${imei}`);
+    } else {
+      console.warn("Locate failed:", data.message);
+    }
+
+  } catch (err) {
+    console.error("Locate error:", err);
+  }
+}
+
 
 function updateLastSeenTimes() {
   document.querySelectorAll("tr[data-device]").forEach(row => {
