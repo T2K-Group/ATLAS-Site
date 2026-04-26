@@ -180,9 +180,9 @@ function renderAnchorsTable(apiResponse) {
         const deleteBtn = dropdownCell.querySelector(".delete-btn");
 
         saveBtn.addEventListener("click", async () => {
-            const latVal = dropdownCell.querySelector(".anchor-lat").valueAsNumber;
-            const lonVal = dropdownCell.querySelector(".anchor-lon").valueAsNumber;
-            const siteVal = dropdownCell.querySelector(".anchor-site-id").valueAsNumber;
+            const latVal = dropdownCell.querySelector(".anchor-lat").value;
+            const lonVal = dropdownCell.querySelector(".anchor-lon").value;
+            const siteVal = dropdownCell.querySelector(".anchor-site-id").value;
             const payload = {
                 mac: macInput.value.trim() || null,
                 lat: !isNaN(latVal) ? latVal : null,
