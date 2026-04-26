@@ -182,7 +182,7 @@ function renderAnchorsTable(apiResponse) {
         saveBtn.addEventListener("click", async () => {
             const latVal = dropdownCell.querySelector(".anchor-lat").value;
             const lonVal = dropdownCell.querySelector(".anchor-lon").value;
-            const siteVal = dropdownCell.querySelector(".anchor-site-id").value;
+            const siteVal = dropdownCell.querySelector(".anchor-site-id").valueAsNumber;
             const payload = {
                 mac: macInput.value.trim() || null,
                 lat: !isNaN(latVal) ? latVal : null,
