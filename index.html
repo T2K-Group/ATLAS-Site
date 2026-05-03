@@ -1,10 +1,8 @@
 <!DOCTYPE html>
 <html lang="en"> 
 <head>
-	
     <title>ATLAS - Overview</title>
     
-    <!-- Meta -->
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -13,212 +11,214 @@
     <meta name="author" content="T2K Group Limited">    
     <link rel="shortcut icon" href="favicon.ico"> 
 
-
-    
-    <!-- FontAwesome JS-->
+    <!-- FontAwesome -->
     <script defer src="assets/plugins/fontawesome/js/all.min.js"></script>
     
     <!-- App CSS -->  
     <link id="theme-style" rel="stylesheet" href="assets/css/portal.css">
 
-	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-	<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-		<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css"/>
-	<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+    <!-- Leaflet -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
 
-</head> 
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.fullscreen@2.4.0/Control.FullScreen.css" />
 
 <style>
-/* Full viewport flex layout for wrapper */
+
+/* Layout */
 .app-wrapper {
     display: flex;
-    flex-direction: column; /* stack header, content, footer */
+    flex-direction: column;
     height: 100vh;
     width: 87%;
 }
 
-/* Header and footer: fixed height */
 .app-header {
-    height: 64px; /* your header height */
+    height: 64px;
     flex-shrink: 0;
 }
 
-.app-footer {
-    height: 40px; /* approximate footer height */
-    flex-shrink: 0;
-    text-align: center;
-    line-height: 40px;
-}
-
-/* Main content: take remaining space */
 .app-content {
-    flex: 1 1 auto; /* grow to fill remaining space */
-    padding: 5px;   /* optional padding around map */
-    box-sizing: border-box;
+    flex: 1;
+    padding: 5px;
     display: flex;
-    justify-content: center;
-    align-items: center;
 }
 
-/* Map fills most of the content area */
 #map {
-    width: 100%;     /* full width of app-content */
-    height: 87%;    /* fill remaining vertical space */
+    width: 100%;
+    height: 100%;
     border-radius: 12px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+/* Sidebar fixes */
+.sidepanel-inner {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Nav alignment */
+.app-nav .nav-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.app-nav .nav-icon {
+    width: 20px;
+    text-align: center;
+}
+
+/* Push footer down */
+.app-nav-main {
+    flex-grow: 1;
+}
+
+/* Footer styling */
+.app-sidepanel-footer {
+    margin-top: auto;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding-bottom: 15px;
+}
+
+/* Center logo */
+#org-img {
+    display: block;
+    margin: 10px auto;
+    max-width: 120px;
+}
+
+/* Footer text */
+.app-footer {
+    height: 40px;
+    text-align: center;
 }
 
 </style>
+</head> 
 
-<link rel="stylesheet" href="https://unpkg.com/leaflet.fullscreen@2.4.0/Control.FullScreen.css" />
 <body class="app">   	
-    <header class="app-header fixed-top">	   	            
-        <div class="app-header-inner">  
-	        <div class="container-fluid py-2">
-		        <div class="app-header-content"> 
-		            <div class="row justify-content-between align-items-center">
-			        
-				    <div class="col-auto">
-					    <a id="sidepanel-toggler" class="sidepanel-toggler d-inline-block d-xl-none" href="#">
-						    <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" viewBox="0 0 30 30" role="img"><title>Menu</title><path stroke="currentColor" stroke-linecap="round" stroke-miterlimit="10" stroke-width="2" d="M4 7h22M4 15h22M4 23h22"></path></svg>
-					    </a>
 
-		            
-		            <div class="app-utilities col-auto">
+<header class="app-header fixed-top">	   	            
+    <div class="app-header-inner">  
+        <div class="container-fluid py-2">
+            <div class="d-flex justify-content-between align-items-center">
 
-		            </div><!--//app-utilities-->
-		        </div><!--//row-->
-	            </div><!--//app-header-content-->
-	        </div><!--//container-fluid-->
-        </div><!--//app-header-inner-->
-        <div id="app-sidepanel" class="app-sidepanel"> 
-	        <div id="sidepanel-drop" class="sidepanel-drop"></div>
-	        <div class="sidepanel-inner d-flex flex-column">
-		        <a href="#" id="sidepanel-close" class="sidepanel-close d-xl-none">&times;</a>
-		        <div class="app-branding">
-		            <a class="" href="index.html"><img src="assets/images/atlas_logo.png" alt="ATLAS" style="height: 50px;"><span class="logo-text"></span></a>
-		        </div><!--//app-branding-->  
-		        
-			    <nav id="app-nav-main" class="app-nav app-nav-main flex-grow-1">
-				    <ul class="app-menu list-unstyled accordion" id="menu-accordion">
-					    <li class="nav-item">
-					        <!--//Bootstrap Icons: https://icons.getbootstrap.com/ -->
-					        <a class="nav-link active" href="index.html">
-						        <span class="nav-icon">
-								<i class="fa-regular fa-map"></i>
-						         </span>
-		                         <span class="nav-link-text">Map</span>
-					        </a><!--//nav-link-->
-					    </li><!--//nav-item-->
-					    <li class="nav-item">
-					        <!--//Bootstrap Icons: https://icons.getbootstrap.com/ -->
-					        <a class="nav-link" href="devices.html">
-						        <span class="nav-icon">
-									<i class="fa-solid fa-satellite"></i>
-						         </span>
-		                         <span class="nav-link-text">Devices</span>
-					        </a><!--//nav-link-->
-					    </li><!--//nav-item-->
-					    <li class="nav-item">
-					        <!--//Bootstrap Icons: https://icons.getbootstrap.com/ -->
-					        <a class="nav-link" href="sites.html">
-						        <span class="nav-icon">
-									<i class="fa-solid fa-building"></i>
-						         </span>
-		                         <span class="nav-link-text">Sites</span>
-					        </a><!--//nav-link-->
-					    </li><!--//nav-item-->
-					    <li class="nav-item user-hide" hidden>
-					        <!--//Bootstrap Icons: https://icons.getbootstrap.com/ -->
-					        <a class="nav-link" href="users.html">
-						        <span class="nav-icon">
-									<i class="fa-solid fa-users"></i> 
-						         </span>
-		                         <span class="nav-link-text">User Management</span>
-					        </a><!--//nav-link-->
-					    </li><!--//nav-item-->
-						<li class="nav-item la-hide" hidden>
-					        <!--//Bootstrap Icons: https://icons.getbootstrap.com/ -->
-					        <a class="nav-link" href="checkin.html">
-						        <span class="nav-icon">
-									<i class="fa-solid fa-check"></i> 
-						         </span>
-		                         <span class="nav-link-text">Check In</span>
-					        </a><!--//nav-link-->
-					    </li><!--//nav-item-->	
-					    <li class="nav-item la-hide" hidden>
-					        <!--//Bootstrap Icons: https://icons.getbootstrap.com/ -->
-					        <a class="nav-link submenu-toggle" href="#" data-bs-toggle="collapse" data-bs-target="#submenu-1" aria-expanded="false" aria-controls="submenu-1">
-						        <span class="nav-icon">
-						        <!--//Bootstrap Icons: https://icons.getbootstrap.com/ -->
-						        <i class="fa-solid fa-wifi"></i>
-						         </span>
-		                         <span class="nav-link-text">Networks</span>
-					    </li><!--//nav-item-->
-					    <li class="nav-item la-hide" hidden>
-					        <a class="nav-link" href="anchors.html">
-						        <span class="nav-icon">
-									<i class="fa-solid fa-location-crosshairs"></i>
-						         </span>
-		                         <span class="nav-link-text">Anchors</span>
-					        </a><!--//nav-link-->
-					    </li><!--//nav-item-->
+                <a id="sidepanel-toggler" class="sidepanel-toggler d-inline-block d-xl-none" href="#">
+                    <svg width="30" height="30" viewBox="0 0 30 30">
+                        <path stroke="currentColor" stroke-width="2" d="M4 7h22M4 15h22M4 23h22"/>
+                    </svg>
+                </a>
 
-				    </ul><!--//app-menu-->
-			    </nav><!--//app-nav-->
-			    <div class="app-sidepanel-footer">
-				    <nav class="app-nav app-nav-footer">
-						<img id="org-img"src="" alt="Customer Logo" hidden style=""><span class="logo-text"></span>
-					    <ul class="app-menu footer-menu list-unstyled">
-						    <li class="nav-item">
-						        <!--//Bootstrap Icons: https://icons.getbootstrap.com/ -->
-						        <a class="nav-link" href="https://themes.3rdwavemedia.com/bootstrap-templates/admin-dashboard/portal-free-bootstrap-admin-dashboard-template-for-developers/">
-							        <span class="nav-icon">
-										<i class="fa-solid fa-user"></i> 
-									</span>
-			                        <span class="nav-link-text">My Account</span>
-						        </a><!--//nav-link-->
-						    </li><!--//nav-item-->
-					    </ul><!--//footer-menu-->
-				    </nav>
-			    </div><!--//app-sidepanel-footer-->
-		       
-	        </div><!--//sidepanel-inner-->
-	    </div><!--//app-sidepanel-->
-    </header><!--//app-header-->
-    
-	<div class="app-wrapper mw-100">
-		<div class="app-content">
-			<div id="map"></div>
-		</div>
-	</div>
-	    
-	    <footer class="app-footer">
-		    <div class="container text-center py-3">
-				<small class="copyright">ATLAS Tracking Solutions - A T2K Group Product</small>
-		    </div>
-	    </footer><!--//app-footer-->
-	    
-    </div><!--//app-wrapper-->   
-	
+                <div class="app-utilities"></div>
 
-		
+            </div>
+        </div>
+    </div>
 
- 
-    <!-- Javascript -->          
-    <script src="assets/plugins/popper.min.js"></script>
-    <script src="assets/plugins/bootstrap/js/bootstrap.min.js"></script>  
+    <!-- Sidebar -->
+    <div id="app-sidepanel" class="app-sidepanel"> 
+        <div id="sidepanel-drop" class="sidepanel-drop"></div>
 
+        <div class="sidepanel-inner">
+            <a href="#" id="sidepanel-close" class="sidepanel-close d-xl-none">&times;</a>
 
-    <!-- Page Specific JS -->
-	<script src="assets/js/login.js"></script>
-    <script src="assets/js/utils.js"></script>
-    <script src="assets/js/app.js"></script>
-	<script src="assets/js/fetchDevices.js"></script>
-	<script src="https://unpkg.com/leaflet.fullscreen@2.4.0/Control.FullScreen.js"></script>
-	<script src="assets/js/map.js"></script>
-	
+            <!-- Logo -->
+            <div class="app-branding text-center">
+                <a href="index.html">
+                    <img src="assets/images/atlas_logo.png" style="height:50px;">
+                </a>
+            </div>
+
+            <!-- Nav -->
+            <nav class="app-nav app-nav-main">
+                <ul class="app-menu list-unstyled">
+
+                    <li>
+                        <a class="nav-link active" href="index.html">
+                            <span class="nav-icon"><i class="fa-regular fa-map"></i></span>
+                            <span>Map</span>
+                        </a>
+                    </li>
+
+                    <li>
+                        <a class="nav-link" href="devices.html">
+                            <span class="nav-icon"><i class="fa-solid fa-satellite"></i></span>
+                            <span>Devices</span>
+                        </a>
+                    </li>
+
+                    <li>
+                        <a class="nav-link" href="sites.html">
+                            <span class="nav-icon"><i class="fa-solid fa-building"></i></span>
+                            <span>Sites</span>
+                        </a>
+                    </li>
+
+                    <li class="user-hide" hidden>
+                        <a class="nav-link" href="users.html">
+                            <span class="nav-icon"><i class="fa-solid fa-users"></i></span>
+                            <span>User Management</span>
+                        </a>
+                    </li>
+
+                    <li class="la-hide" hidden>
+                        <a class="nav-link" href="anchors.html">
+                            <span class="nav-icon"><i class="fa-solid fa-location-crosshairs"></i></span>
+                            <span>Anchors</span>
+                        </a>
+                    </li>
+
+                </ul>
+            </nav>
+
+            <!-- Footer -->
+            <div class="app-sidepanel-footer">
+                <img id="org-img" src="" alt="Customer Logo" hidden>
+
+                <nav class="app-nav">
+                    <ul class="app-menu list-unstyled">
+                        <li>
+                            <a class="nav-link" href="#">
+                                <span class="nav-icon"><i class="fa-solid fa-user"></i></span>
+                                <span>My Account</span>
+                            </a>
+                        </li>
+                    </ul>
+                </nav>
+            </div>
+
+        </div>
+    </div>
+</header>
+
+<!-- Main -->
+<div class="app-wrapper">
+    <div class="app-content">
+        <div id="map"></div>
+    </div>
+</div>
+
+<!-- Footer -->
+<footer class="app-footer">
+    <small>ATLAS Tracking Solutions - A T2K Group Product</small>
+</footer>
+
+<!-- JS -->
+<script src="assets/plugins/popper.min.js"></script>
+<script src="assets/plugins/bootstrap/js/bootstrap.min.js"></script>  
+
+<script src="assets/js/login.js"></script>
+<script src="assets/js/utils.js"></script>
+<script src="assets/js/app.js"></script>
+<script src="assets/js/fetchDevices.js"></script>
+<script src="https://unpkg.com/leaflet.fullscreen@2.4.0/Control.FullScreen.js"></script>
+<script src="assets/js/map.js"></script>
+
 </body>
-</html> 
-
+</html>
