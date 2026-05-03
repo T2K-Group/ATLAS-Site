@@ -1,5 +1,4 @@
 const lastDeviceState = {};
-let map = null;
 let mapMarker = null;
 let locationModal = null;
 let settingsModal = null;
