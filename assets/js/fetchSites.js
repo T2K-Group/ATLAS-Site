@@ -377,7 +377,7 @@ function initMapEditor(site) {
         }
 
         postcodeMarker = L.marker([latitude, longitude]).addTo(map);
-    });
+    };
 
     // Save button
     saveBtn.addEventListener("click", async () => {
