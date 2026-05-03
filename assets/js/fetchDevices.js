@@ -1,4 +1,5 @@
 const lastDeviceState = {};
+let device_map = null;
 let mapMarker = null;
 let locationModal = null;
 let settingsModal = null;
@@ -819,28 +820,28 @@ function openDeviceMap(dev) {
 
   // Wait for modal animation to finish
   setTimeout(() => {
-    if (!map) {
-      map = L.map("map").setView([dev.lat, dev.lon], 15);
+    if (!device_map) {
+      device_map = L.map("map").setView([dev.lat, dev.lon], 15);
 
       L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
         attribution: "&copy; OpenStreetMap contributors"
-      }).addTo(map);
+      }).addTo(device_map);
     }
 
-    map.setView([dev.lat, dev.lon], 15);
+    device_map.setView([dev.lat, dev.lon], 15);
 
     if (mapMarker) {
-      map.removeLayer(mapMarker);
+      device_map.removeLayer(mapMarker);
     }
 
     mapMarker = L.marker([dev.lat, dev.lon])
-      .addTo(map)
+      .addTo(device_map)
       .bindPopup(`<strong>${dev.name}</strong>`)
       .openPopup();
 
     // Fix rendering issue when inside modal
     setTimeout(() => {
-      map.invalidateSize();
+      device_map.invalidateSize();
     }, 200);
 
   }, 300);
