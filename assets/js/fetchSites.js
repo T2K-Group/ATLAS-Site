@@ -360,7 +360,7 @@ function initMapEditor(site) {
     const postcodeSearchBtn = container.querySelector(".postcode-search-btn");
     let postcodeMarker = null;
 
-    postcodeSearchBtn.addEventListener("click", async () => {
+    postcodeSearchBtn.onclick = async () => {
 
         const postcode = postcodeInput.value.trim();
         if (!postcode) return;
