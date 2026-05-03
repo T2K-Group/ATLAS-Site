@@ -1,177 +1,166 @@
-// -------------------------
-// GLOBAL SAFE STATE
-// -------------------------
+// =========================
+// GLOBAL STATE
+// =========================
 window.atlasData = window.atlasData || {
   orgs: {},
   sites: {},
   devices: {}
 };
 
-// -------------------------
-// Global map and layers
-// -------------------------
 const orgLayers = {};
 const orgMarkers = {};
 const orgSiteLayers = {};
 
-let map = null;
-let layerControl = null;
+let map;
+let layerControl;
 
-// -------------------------
+// =========================
 // INIT MAP
-// -------------------------
+// =========================
 document.addEventListener("DOMContentLoaded", async () => {
 
-  map = L.map("map", {
-    zoomControl: true,
-    fullscreenControl: true
-  }).setView([54.5, -3], 6);
+  map = L.map("map").setView([54.5, -3], 6);
 
-  const osmLayer = L.tileLayer(
-    "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
-    { attribution: "© OpenStreetMap contributors" }
-  ).addTo(map);
+  const osm = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+    attribution: "© OpenStreetMap"
+  }).addTo(map);
 
-  const satLayer = L.tileLayer(
-    "https://khms0.google.com/kh/v=1008?x={x}&y={y}&z={z}",
-    { attribution: "© Google Maps" }
-  );
-
-  const darkLayer = L.tileLayer(
-    "https://cartodb-basemaps-{s}.global.ssl.fastly.net/dark_all/{z}/{x}/{y}.png",
-    { attribution: "© Carto / OSM" }
-  );
+  const sat = L.tileLayer("https://khms0.google.com/kh/v=1008?x={x}&y={y}&z={z}");
+  const dark = L.tileLayer("https://cartodb-basemaps-{s}.global.ssl.fastly.net/dark_all/{z}/{x}/{y}.png");
 
   layerControl = L.control.layers(
     {
-      "OpenStreetMap": osmLayer,
-      "Satellite": satLayer,
-      "Dark Mode": darkLayer
+      "OSM": osm,
+      "Satellite": sat,
+      "Dark": dark
     },
     {},
     { collapsed: true }
   ).addTo(map);
 
   document.getElementById("sidepanel-toggler")
-    ?.addEventListener("click", () => setTimeout(() => map.invalidateSize(), 300));
+    ?.addEventListener("click", () => setTimeout(() => map.invalidateSize(), 200));
 
-  // -------------------------
-  // IMPORTANT FIX:
-  // Fetch FIRST, then render
-  // -------------------------
-  await fetchAndStoreAtlasData(true);
-  await refreshMap();
+  await fetchAll(true);
+  renderAll();
 
-  // polling loop
-  setInterval(refreshMap, 5000);
+  setInterval(async () => {
+    await fetchAll(false);
+    renderDevices();
+  }, 5000);
+
+  setInterval(async () => {
+    await fetchSitesOnly();
+    renderSites();
+  }, 300000);
 });
 
 
-// -------------------------
-// MASTER REFRESH FUNCTION
-// -------------------------
-async function refreshMap() {
-  await fetchAndStoreAtlasData(false);
-  renderSites();
-  renderDevices();
-}
-
-
-// -------------------------
-// FETCH DATA INTO MEMORY ONLY
-// -------------------------
-async function fetchAndStoreAtlasData(forceFull = false) {
+// =========================
+// FETCH DEVICES (DELTA SAFE MERGE)
+// =========================
+async function fetchAll(forceFull) {
 
   const token = getCookie("session_id");
   if (!token) return;
 
-  let delta_ts = localStorage.getItem("delta_ts");
-  if (!delta_ts || forceFull) delta_ts = 0;
+  let ts = localStorage.getItem("delta_ts") || 0;
+  if (forceFull) ts = 0;
 
-  try {
-    let deviceUrl = "https://atlasapi.t2k.group/fetch/devices";
-    if (delta_ts) deviceUrl += `?timestamp=${delta_ts}`;
+  const url = ts
+    ? `https://atlasapi.t2k.group/fetch/devices?timestamp=${ts}`
+    : `https://atlasapi.t2k.group/fetch/devices`;
 
-    const [deviceRes, siteRes] = await Promise.all([
-      fetch(deviceUrl, {
-        headers: { Authorization: `Bearer ${token}` }
-      }),
-      fetch("https://atlasapi.t2k.group/fetch/sites", {
-        headers: { Authorization: `Bearer ${token}` }
-      })
-    ]);
+  const [devicesRes, sitesRes] = await Promise.all([
+    fetch(url, { headers: { Authorization: `Bearer ${token}` } }),
+    fetch("https://atlasapi.t2k.group/fetch/sites", {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+  ]);
 
-    const devicesData = await deviceRes.json();
-    const sitesData = await siteRes.json();
+  const devicesData = await devicesRes.json();
+  const sitesData = await sitesRes.json();
 
-    if (devicesData?.data?.fetch_ts) {
-      localStorage.setItem("delta_ts", devicesData.data.fetch_ts);
-    }
+  console.log("DEVICES RAW:", devicesData);
 
-    // reset store (prevents ghost devices)
-    window.atlasData = {
-      orgs: {},
-      sites: {},
-      devices: {}
+  if (devicesData?.data?.fetch_ts) {
+    localStorage.setItem("delta_ts", devicesData.data.fetch_ts);
+  }
+
+  // =========================
+  // MERGE DEVICES
+  // =========================
+  for (const orgId in devicesData.data) {
+
+    if (orgId === "fetch_ts") continue;
+
+    const org = devicesData.data[orgId];
+    if (!org?.devices) continue;
+
+    window.atlasData.orgs[orgId] = {
+      orgName: org.orgName
     };
 
-    // -------------------------
-    // ORGS + DEVICES
-    // -------------------------
-    for (const orgId in devicesData.data) {
-      if (orgId === "fetch_ts") continue;
+    for (const d of org.devices) {
 
-      const org = devicesData.data[orgId];
+      if (!d?.deviceId) continue;
 
-      window.atlasData.orgs[orgId] = {
-        orgName: org.orgName
+      window.atlasData.devices[d.deviceId] = {
+        ...(window.atlasData.devices[d.deviceId] || {}),
+        ...d,
+        orgId
       };
-
-      org.devices.forEach(dev => {
-        window.atlasData.devices[dev.deviceId] = {
-          ...dev,
-          orgId
-        };
-      });
     }
+  }
 
-    // -------------------------
-    // SITES
-    // -------------------------
-    for (const orgId in sitesData.data) {
-      sitesData.data[orgId].sites.forEach(site => {
-        window.atlasData.sites[site.id] = {
-          ...site,
-          orgId
-        };
-      });
-    }
+  // =========================
+  // SITES
+  // =========================
+  window.atlasData.sites = {};
 
-  } catch (err) {
-    console.error("Fetch error:", err);
+  for (const orgId in sitesData.data) {
+    const org = sitesData.data[orgId];
+
+    (org.sites || []).forEach(site => {
+      window.atlasData.sites[site.id] = {
+        ...site,
+        orgId
+      };
+    });
   }
 }
 
 
-// -------------------------
-// DEVICE RENDERING
-// -------------------------
+// =========================
+// MASTER RENDER
+// =========================
+function renderAll() {
+  renderDevices();
+  renderSites();
+}
+
+
+// =========================
+// DEVICE RENDER
+// =========================
 function renderDevices() {
 
-  if (!window.atlasData?.devices) return;
+  const devices = Object.values(window.atlasData.devices || []);
+  if (!devices.length) return;
 
   const grouped = {};
 
-  for (const dev of Object.values(window.atlasData.devices)) {
-    const orgId = dev.orgId;
-    const orgName = window.atlasData.orgs?.[orgId]?.orgName || `Org ${orgId}`;
+  for (const d of devices) {
+
+    const orgName =
+      window.atlasData.orgs?.[d.orgId]?.orgName ||
+      `Org ${d.orgId}`;
 
     if (!grouped[orgName]) grouped[orgName] = [];
-    grouped[orgName].push(dev);
+    grouped[orgName].push(d);
   }
 
   for (const orgName in grouped) {
-    const devices = grouped[orgName];
 
     if (!orgLayers[orgName]) {
       orgLayers[orgName] = L.layerGroup().addTo(map);
@@ -179,10 +168,9 @@ function renderDevices() {
     }
 
     const markers = orgMarkers[orgName];
-
     const active = new Set();
 
-    devices.forEach(device => {
+    grouped[orgName].forEach(device => {
       active.add(device.deviceId);
       addOrUpdateMarker(orgName, device);
     });
@@ -192,53 +180,96 @@ function renderDevices() {
 }
 
 
-// -------------------------
-// MARKERS
-// -------------------------
+// =========================
+// MARKER + ACCURACY CIRCLE (FIXED)
+// =========================
 function addOrUpdateMarker(orgName, device) {
 
-  if (!device.lat || !device.lon) return;
+  const lat = Number(device.lat);
+  const lon = Number(device.lon);
+
+  if (!Number.isFinite(lat) || !Number.isFinite(lon)) return;
 
   const markers = orgMarkers[orgName];
   let marker = markers[device.deviceId];
 
-  const icon = L.icon({
-    iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
-    shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-    iconSize: [14, 22],
-    iconAnchor: [7, 22],
-    popupAnchor: [1, -18]
-  });
+  function timeAgo(timestamp) {
+    if (!timestamp) return "-";
+    const seconds = Math.floor((Date.now() - new Date(timestamp)) / 1000);
+
+    if (seconds < 60) return `${seconds}s ago`;
+    if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
+    if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
+    return `${Math.floor(seconds / 86400)}d ago`;
+  }
+
+  const lastSeenFormatted = device.lastSeen
+    ? `${timeAgo(device.lastSeen)} (${new Date(device.lastSeen).toLocaleString()})`
+    : "N/A";
 
   const popup = `
     <b>${device.name}</b><br>
-    Battery: ${device.battPercent ?? "N/A"}<br>
-    Last Seen: ${device.lastSeen ? new Date(device.lastSeen).toLocaleString() : "N/A"}
+    Battery: ${device.battPercent ?? "N/A"}%<br>
+    Accuracy: ${device.acc ?? "N/A"} m<br>
+    Last Seen: ${lastSeenFormatted}
   `;
 
+  // =========================
+  // UPDATE EXISTING
+  // =========================
   if (marker) {
-    marker.setLatLng([device.lat, device.lon]);
+
+    marker.setLatLng([lat, lon]);
     marker.setPopupContent(popup);
+
+    // UPDATE CIRCLE
+    if (marker.circle) {
+      marker.circle.setLatLng([lat, lon]);
+      marker.circle.setRadius(device.acc || 0);
+    }
+
     return;
   }
 
-  marker = L.marker([device.lat, device.lon], { icon })
+  // =========================
+  // CREATE MARKER
+  // =========================
+  marker = L.marker([lat, lon])
     .bindPopup(popup)
     .addTo(orgLayers[orgName]);
+
+  // =========================
+  // CREATE ACCURACY CIRCLE
+  // =========================
+  const circle = L.circle([lat, lon], {
+    radius: device.acc || 0,
+    color: "#3388ff",
+    fillColor: "#3388ff",
+    fillOpacity: 0.15,
+    weight: 1
+  }).addTo(orgLayers[orgName]);
+
+  marker.circle = circle;
 
   markers[device.deviceId] = marker;
 }
 
 
-// -------------------------
+// =========================
 // CLEANUP
-// -------------------------
+// =========================
 function cleanupMarkers(orgName, activeSet) {
+
   const markers = orgMarkers[orgName];
   if (!markers) return;
 
   for (const id in markers) {
-    if (!activeSet.has(id)) {
+    if (!activeSet.has(Number(id))) {
+
+      if (markers[id].circle) {
+        orgLayers[orgName].removeLayer(markers[id].circle);
+      }
+
       orgLayers[orgName].removeLayer(markers[id]);
       delete markers[id];
     }
@@ -246,14 +277,12 @@ function cleanupMarkers(orgName, activeSet) {
 }
 
 
-// -------------------------
+// =========================
 // SITES
-// -------------------------
+// =========================
 function renderSites() {
 
-  if (!window.atlasData?.sites) return;
-
-  for (const site of Object.values(window.atlasData.sites)) {
+  for (const site of Object.values(window.atlasData.sites || [])) {
 
     const orgName =
       window.atlasData.orgs?.[site.orgId]?.orgName ||
@@ -261,15 +290,16 @@ function renderSites() {
 
     if (!orgSiteLayers[orgName]) {
       orgSiteLayers[orgName] = L.layerGroup().addTo(map);
-      layerControl.addOverlay(orgSiteLayers[orgName], `${orgName} – Sites`);
+      layerControl.addOverlay(orgSiteLayers[orgName], `${orgName} Sites`);
     }
 
     const layer = orgSiteLayers[orgName];
 
-    if (Array.isArray(site.polygon_points) && site.polygon_points.length >= 3) {
+    if (Array.isArray(site.polygon_points)) {
+
       const latlngs = site.polygon_points
-        .filter(p => p?.lat && p?.lon)
-        .map(p => [p.lat, p.lon]);
+        .filter(p => p?.lat != null && p?.lon != null)
+        .map(p => [Number(p.lat), Number(p.lon)]);
 
       if (latlngs.length >= 3) {
         L.polygon(latlngs, {
@@ -278,21 +308,13 @@ function renderSites() {
         }).addTo(layer);
       }
     }
-
-    if (site.radius && site.centroid_lat && site.centroid_lon) {
-      L.circle([site.centroid_lat, site.centroid_lon], {
-        radius: site.radius,
-        color: site.hq ? "#26a69a" : "#DC143C",
-        fillOpacity: 0.05
-      }).addTo(layer);
-    }
   }
 }
 
 
-// -------------------------
-// COOKIE HELPER
-// -------------------------
+// =========================
+// COOKIE
+// =========================
 function getCookie(name) {
   return document.cookie
     .split("; ")
