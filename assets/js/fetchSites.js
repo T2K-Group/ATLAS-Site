@@ -326,9 +326,21 @@ function initMapEditor(site) {
 
     // Load existing polygon if present
     if (site.polygon_points && site.polygon_points.length >= 3) {
-        const latlngs = site.polygon_points.map(p => [p.lat, p.lon]);
-        currentDrawnLayer = L.polygon(latlngs, { color: "blue", fillOpacity: 0.2 }).addTo(drawnItems);
-        map.fitBounds(currentDrawnLayer.getBounds());
+
+        const latlngs = site.polygon_points
+            .filter(p => p && typeof p.lat === "number" && typeof p.lon === "number")
+            .map(p => [p.lat, p.lon]);
+
+        if (latlngs.length >= 3) {
+            currentDrawnLayer = L.polygon(latlngs, {
+                color: "blue",
+                fillOpacity: 0.2
+            }).addTo(drawnItems);
+
+            map.fitBounds(currentDrawnLayer.getBounds());
+        } else {
+            console.warn("Invalid polygon points for site:", site.id, site.polygon_points);
+        }
     }
 
     map.on(L.Draw.Event.CREATED, function (e) {
