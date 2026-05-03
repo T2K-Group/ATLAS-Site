@@ -1,56 +1,58 @@
 // -------------------------
 // Global map and layers
 // -------------------------
-const orgLayers = {};       // LayerGroup per org
-const orgMarkers = {};      // Track device markers per org
-const orgSiteLayers = {};   // LayerGroup per org for sites
-
-
+const orgLayers = {};
+const orgMarkers = {};
+const orgSiteLayers = {};
 
 document.addEventListener("DOMContentLoaded", async () => {
-  map = L.map("map", { zoomControl: true, fullscreenControl: true }).setView([54.5, -3], 6);
+  map = L.map("map", {
+    zoomControl: true,
+    fullscreenControl: true
+  }).setView([54.5, -3], 6);
 
-  // Base maps
   const osmLayer = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution: "© OpenStreetMap contributors"
   }).addTo(map);
-
 
   const satLayer = L.tileLayer("https://khms0.google.com/kh/v=1008?x={x}&y={y}&z={z}", {
     attribution: "© Google Maps"
   });
 
-  const darkLayer = L.tileLayer("https://cartodb-basemaps-{s}.global.ssl.fastly.net/dark_all/{z}/{x}/{y}.png", {
-    attribution: "© Map tiles by Carto, under CC BY 3.0. Data by OpenStreetMap, under ODbL."
-  });
+  const darkLayer = L.tileLayer(
+    "https://cartodb-basemaps-{s}.global.ssl.fastly.net/dark_all/{z}/{x}/{y}.png",
+    { attribution: "© Carto / OSM" }
+  );
 
-  const baseMaps = { "OpenStreetMap": osmLayer, "Satellite": satLayer, "Dark Mode" : darkLayer };
-  const overlayMaps = {};
-  const layerControl = L.control.layers(baseMaps, overlayMaps, { collapsed: true }).addTo(map);
+  const layerControl = L.control.layers(
+    {
+      "OpenStreetMap": osmLayer,
+      "Satellite": satLayer,
+      "Dark Mode": darkLayer
+    },
+    {},
+    { collapsed: true }
+  ).addTo(map);
 
-  // Fix map resize on sidebar toggle
-  const toggle = document.getElementById("sidepanel-toggler");
-  toggle?.addEventListener("click", () => setTimeout(() => map.invalidateSize(), 300));
+  document
+    .getElementById("sidepanel-toggler")
+    ?.addEventListener("click", () => setTimeout(() => map.invalidateSize(), 300));
 
-  // Initial render & polling every 5s
-  await updateMapMarkers(layerControl, overlayMaps);
-  setInterval(() => updateMapMarkers(layerControl, overlayMaps), 5000);
+  await updateMapMarkers(layerControl);
+
+  setInterval(() => updateMapMarkers(layerControl), 5000);
 });
 
 // -------------------------
-// Add or update a device marker
+// Add / update marker
 // -------------------------
 function addOrUpdateMarker(orgName, device) {
-  // Skip if coordinates are missing or invalid
   if (
     device.lat == null ||
     device.lon == null ||
     isNaN(device.lat) ||
     isNaN(device.lon)
-  ) {
-    console.warn(`Skipping device ${device.name} due to invalid coordinates`, device);
-    return;
-  }
+  ) return;
 
   if (!orgLayers[orgName]) {
     orgLayers[orgName] = L.layerGroup().addTo(map);
@@ -58,70 +60,39 @@ function addOrUpdateMarker(orgName, device) {
   }
 
   const markers = orgMarkers[orgName];
-  let marker = markers[device.name];
+  let marker = markers[device.deviceId];
 
-  const smallDeviceIcon = L.icon({
+  const icon = L.icon({
     iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
     shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
-
     iconSize: [14, 22],
-    iconAnchor: [7, 22],     
+    iconAnchor: [7, 22],
     popupAnchor: [1, -18],
     shadowSize: [22, 22]
   });
 
-  if (marker) {
-    const current = marker.getLatLng();
-    const moved = current.lat !== device.lat || current.lng !== device.lon;
-    const changedBatt = marker.options.battPercent !== device.battPercent;
-    const changedAcc = marker.options.acc !== device.acc;
+  const popup = `
+    <strong>${device.name}</strong><br>
+    Battery: ${device.battPercent ?? "N/A"}<br>
+    Last Seen: ${device.lastSeen ? new Date(device.lastSeen).toLocaleString() : "N/A"}
+  `;
 
-    if (!moved && !changedBatt && !changedAcc) return;
+  if (marker) {
+    const moved =
+      marker.getLatLng().lat !== device.lat ||
+      marker.getLatLng().lng !== device.lon;
 
     if (moved) marker.setLatLng([device.lat, device.lon]);
 
-    marker.setPopupContent(
-      `<strong>${device.name}</strong><br>` +
-      `Battery: ${device.battPercent ?? "N/A"}<br>` +
-      `Last Seen: ${new Date(device.lastSeen).toLocaleString()}`
-    );
-
-    marker.options.battPercent = device.battPercent;
-    marker.options.acc = device.acc;
-
-    if (marker.circle) {
-      marker.circle.setLatLng([device.lat, device.lon]);
-      marker.circle.setRadius((device.acc *2) || 0);
-    }
-
-  } else {
-    marker = L.marker([device.lat, device.lon], {
-      icon: smallDeviceIcon,
-      battPercent: device.battPercent,
-      acc: device.acc
-    });
-
-    marker.bindPopup(
-      `<strong>${device.name}</strong><br>` +
-      `Battery: ${device.battPercent ?? "N/A"}<br>` +
-      `Last Seen: ${new Date(device.lastSeen).toLocaleString()}`
-    );
-
-    if (device.acc != null) {
-      const circle = L.circle([device.lat, device.lon], {
-        radius: device.acc,
-        color: "blue",
-        fillColor: "#3f51b5",
-        fillOpacity: 0.2
-      });
-
-      circle.addTo(orgLayers[orgName]);
-      marker.circle = circle;
-    }
-
-    marker.addTo(orgLayers[orgName]);
-    markers[device.name] = marker;
+    marker.setPopupContent(popup);
+    return;
   }
+
+  marker = L.marker([device.lat, device.lon], { icon })
+    .bindPopup(popup)
+    .addTo(orgLayers[orgName]);
+
+  markers[device.deviceId] = marker;
 }
 
 // -------------------------
@@ -131,100 +102,82 @@ function cleanupMarkers(orgName, currentDevices) {
   const markers = orgMarkers[orgName];
   if (!markers) return;
 
-  const currentNames = new Set(currentDevices.map(d => d.name));
-  for (const name in markers) {
-    if (!currentNames.has(name)) {
-      orgLayers[orgName].removeLayer(markers[name]);
-      if (markers[name].circle) map.removeLayer(markers[name].circle);
-      delete markers[name];
+  const active = new Set(currentDevices.map(d => d.deviceId));
+
+  for (const id in markers) {
+    if (!active.has(id)) {
+      orgLayers[orgName].removeLayer(markers[id]);
+      delete markers[id];
     }
   }
 }
 
 // -------------------------
-// Render sites per org
+// Render sites (from memory)
 // -------------------------
-function renderSites(sitesData, layerControl) {
-  if (!sitesData || !sitesData.data) return;
+function renderSites(layerControl) {
+  if (!window.atlasData?.sites) return;
 
-  console.log("picking sites")
+  for (const site of Object.values(window.atlasData.sites)) {
+    const orgName =
+      window.atlasData.orgs?.[site.orgId]?.orgName ||
+      `Org ${site.orgId}`;
 
-  for (const orgId in sitesData.data) {
-    const org = sitesData.data[orgId];
-    const orgName = org.org_name || `Org ${orgId}`;
+    if (!orgSiteLayers[orgName]) {
+      orgSiteLayers[orgName] = L.layerGroup().addTo(map);
+      layerControl.addOverlay(orgSiteLayers[orgName], `${orgName} – Sites`);
+    }
 
-    if (!orgSiteLayers[orgName]) orgSiteLayers[orgName] = L.layerGroup().addTo(map);
-    const sitesLayer = orgSiteLayers[orgName];
+    const layer = orgSiteLayers[orgName];
 
-    org.sites.forEach(site => {
-      if (!(site.active === 1)) return;
+    if (Array.isArray(site.polygon_points) && site.polygon_points.length >= 3) {
+      const latlngs = site.polygon_points
+        .filter(p => p && !isNaN(p.lat) && !isNaN(p.lon))
+        .map(p => [p.lat, p.lon]);
 
-      // Polygon
-      if (Array.isArray(site.polygon_points) && site.polygon_points.length > 2) {
-
-        const latlngs = site.polygon_points
-          .filter(p =>
-            p &&
-            typeof p.lat === "number" &&
-            typeof p.lon === "number" &&
-            !isNaN(p.lat) &&
-            !isNaN(p.lon)
-          )
-          .map(p => [p.lat, p.lon]);
-
-        if (latlngs.length >= 3) {
-          L.polygon(latlngs, {
-            color: site.hq ? "#26a69a" : "#DC143C",
-            fillOpacity: 0.1
-          }).addTo(sitesLayer);
-        } else {
-          console.warn("Invalid polygon skipped:", site.id, site.polygon_points);
-        }
-      }
-
-      console.log("adding polygone for ", site)
-
-      // Optional radius circle
-      if (site.radius) {
-        L.circle([site.centroid_lat, site.centroid_lon], {
-          radius: site.radius,
+      if (latlngs.length >= 3) {
+        L.polygon(latlngs, {
           color: site.hq ? "#26a69a" : "#DC143C",
-          fillOpacity: 0.05
-        }).addTo(sitesLayer);
+          fillOpacity: 0.1
+        }).addTo(layer);
       }
-    });
+    }
 
-    layerControl.addOverlay(sitesLayer, `${orgName} – Sites`);
+    if (site.radius && site.centroid_lat && site.centroid_lon) {
+      L.circle([site.centroid_lat, site.centroid_lon], {
+        radius: site.radius,
+        color: site.hq ? "#26a69a" : "#DC143C",
+        fillOpacity: 0.05
+      }).addTo(layer);
+    }
   }
 }
 
 // -------------------------
-// Fetch & update map from IndexedDB
+// Update map (NO DB)
 // -------------------------
-async function updateMapMarkers(layerControl, overlayMaps) {
-  // Fetch devices + sites, store in IndexedDB
-  const apiData = await fetchAndSaveAtlasData(false); // <--- use your function now
+async function updateMapMarkers(layerControl) {
+  if (!window.atlasData) return;
 
-  // Get merged device/org structure from IndexedDB
-  const data = await getDevicesByOrgAndSite();
+  const orgMap = {};
 
-  for (const orgId in data) {
-    const org = data[orgId];
-    const orgName = org.orgName || `Org ${orgId}`;
+  for (const device of Object.values(window.atlasData.devices)) {
+    const orgId = device.orgId;
+    const orgName =
+      window.atlasData.orgs?.[orgId]?.orgName || `Org ${orgId}`;
 
-    // Flatten devices including unassigned
-    const devices = [];
-    for (const siteId in org.sites) {
-      devices.push(...org.sites[siteId].devices);
-    }
+    if (!orgMap[orgName]) orgMap[orgName] = [];
 
-    devices.forEach(device => addOrUpdateMarker(orgName, device));
-    cleanupMarkers(orgName, devices);
+    orgMap[orgName].push(device);
+    addOrUpdateMarker(orgName, device);
   }
 
-  // Render sites only once
-  if (!updateMapMarkers.sitesRendered && apiData?.sites) {
-    renderSites(apiData.sites, layerControl);
+  for (const orgName in orgMap) {
+    cleanupMarkers(orgName, orgMap[orgName]);
+  }
+
+  if (!updateMapMarkers.sitesRendered) {
+    renderSites(layerControl);
     updateMapMarkers.sitesRendered = true;
   }
 }
