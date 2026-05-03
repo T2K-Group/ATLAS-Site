@@ -161,11 +161,25 @@ function renderSites(sitesData, layerControl) {
 
       // Polygon
       if (Array.isArray(site.polygon_points) && site.polygon_points.length > 2) {
-        const latlngs = site.polygon_points.map(p => [p.lat, p.lon]);
-        L.polygon(latlngs, {
-          color: site.hq ? "#26a69a" : "#DC143C",
-          fillOpacity: 0.1
-        }).addTo(sitesLayer);
+
+        const latlngs = site.polygon_points
+          .filter(p =>
+            p &&
+            typeof p.lat === "number" &&
+            typeof p.lon === "number" &&
+            !isNaN(p.lat) &&
+            !isNaN(p.lon)
+          )
+          .map(p => [p.lat, p.lon]);
+
+        if (latlngs.length >= 3) {
+          L.polygon(latlngs, {
+            color: site.hq ? "#26a69a" : "#DC143C",
+            fillOpacity: 0.1
+          }).addTo(sitesLayer);
+        } else {
+          console.warn("Invalid polygon skipped:", site.id, site.polygon_points);
+        }
       }
 
       console.log("adding polygone for ", site)
