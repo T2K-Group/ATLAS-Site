@@ -234,9 +234,15 @@ function addOrUpdateMarker(orgName, device) {
   // =========================
   // CREATE MARKER
   // =========================
-  marker = L.marker([lat, lon])
-    .bindPopup(popup)
-    .addTo(orgLayers[orgName]);
+    marker = L.circleMarker([lat, lon], {
+    radius: 5,                 
+    color: "#40a02b",          
+    fillColor: "#40a02b",      
+    fillOpacity: 1,
+    weight: 1
+  })
+  .bindPopup(popup)
+  .addTo(orgLayers[orgName]);
 
   // =========================
   // CREATE ACCURACY CIRCLE
