@@ -236,7 +236,7 @@ function addOrUpdateMarker(orgName, device) {
   // =========================
     marker = L.circleMarker([lat, lon], {
     radius: 5,                 
-    color: "#40a02b",          
+    color: "#4c4f69",          
     fillColor: "#40a02b",      
     fillOpacity: 1,
     weight: 1
@@ -249,8 +249,8 @@ function addOrUpdateMarker(orgName, device) {
   // =========================
   const circle = L.circle([lat, lon], {
     radius: device.acc || 0,
-    color: "#40a02b",
-    fillColor: "#40a02b",
+    color: "#6c6f85",
+    fillColor: "#6c6f85",
     fillOpacity: 0.15,
     weight: 1
   }).addTo(orgLayers[orgName]);
