@@ -243,8 +243,8 @@ function addOrUpdateMarker(orgName, device) {
   // =========================
   const circle = L.circle([lat, lon], {
     radius: device.acc || 0,
-    color: "#3388ff",
-    fillColor: "#3388ff",
+    color: "#40a02b",
+    fillColor: "#40a02b",
     fillOpacity: 0.15,
     weight: 1
   }).addTo(orgLayers[orgName]);
@@ -303,7 +303,7 @@ function renderSites() {
 
       if (latlngs.length >= 3) {
         L.polygon(latlngs, {
-          color: site.hq ? "#26a69a" : "#DC143C",
+          color: site.hq ? "#fe640b" : "#8839ef",
           fillOpacity: 0.1
         }).addTo(layer);
       }
