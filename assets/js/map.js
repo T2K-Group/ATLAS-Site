@@ -14,6 +14,7 @@ const orgSiteLayers = {};
 let map;
 let layerControl;
 
+
 // =========================
 // INIT MAP
 // =========================
@@ -21,12 +22,18 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   map = L.map("map").setView([54.5, -3], 6);
 
+  L.control.fullscreen({
+    position: "topleft"
+  }).addTo(map);
+
+
   const osm = L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
     attribution: "© OpenStreetMap"
   }).addTo(map);
 
   const sat = L.tileLayer("https://khms0.google.com/kh/v=1008?x={x}&y={y}&z={z}");
   const dark = L.tileLayer("https://cartodb-basemaps-{s}.global.ssl.fastly.net/dark_all/{z}/{x}/{y}.png");
+
 
   layerControl = L.control.layers(
     {
@@ -38,9 +45,6 @@ document.addEventListener("DOMContentLoaded", async () => {
     { collapsed: true }
   ).addTo(map);
 
-  document.getElementById("sidepanel-toggler")
-    ?.addEventListener("click", () => setTimeout(() => map.invalidateSize(), 200));
-
   await fetchAll(true);
   renderAll();
 
@@ -50,14 +54,13 @@ document.addEventListener("DOMContentLoaded", async () => {
   }, 5000);
 
   setInterval(async () => {
-    await fetchSitesOnly();
     renderSites();
   }, 300000);
 });
 
 
 // =========================
-// FETCH DEVICES (DELTA SAFE MERGE)
+// FETCH
 // =========================
 async function fetchAll(forceFull) {
 
@@ -81,15 +84,11 @@ async function fetchAll(forceFull) {
   const devicesData = await devicesRes.json();
   const sitesData = await sitesRes.json();
 
-  console.log("DEVICES RAW:", devicesData);
-
   if (devicesData?.data?.fetch_ts) {
     localStorage.setItem("delta_ts", devicesData.data.fetch_ts);
   }
 
-  // =========================
-  // MERGE DEVICES
-  // =========================
+  // DEVICES
   for (const orgId in devicesData.data) {
 
     if (orgId === "fetch_ts") continue;
@@ -102,7 +101,6 @@ async function fetchAll(forceFull) {
     };
 
     for (const d of org.devices) {
-
       if (!d?.deviceId) continue;
 
       window.atlasData.devices[d.deviceId] = {
@@ -113,9 +111,7 @@ async function fetchAll(forceFull) {
     }
   }
 
-  // =========================
   // SITES
-  // =========================
   window.atlasData.sites = {};
 
   for (const orgId in sitesData.data) {
@@ -132,7 +128,39 @@ async function fetchAll(forceFull) {
 
 
 // =========================
-// MASTER RENDER
+// SVG ICON (DEVICE NAME)
+// =========================
+function createDeviceIcon(name) {
+
+  // Try to extract numbers
+  const match = String(name || "").match(/([0-9]+)/);
+
+  // If match exists use number, otherwise full name
+  const displayText = match ? match[1] : (name || "?");
+
+  return L.divIcon({
+    html: `
+      <svg viewBox="0 0 120 100" width="40" height="40" xmlns="http://www.w3.org/2000/svg">
+        <path fill="#40a02b" fill-opacity="0.8"
+          d="M 0 0 L 120 0 L 120 60 L 60 100 L 0 60 Z"/>
+        <text x="60" y="35"
+          fill="#000"
+          text-anchor="middle"
+          dominant-baseline="middle"
+          font-size="40"
+          font-weight="light">
+          ${displayText}
+        </text>
+      </svg>
+    `,
+    className: "",
+    iconSize: [30, 30],
+    iconAnchor: [15, 30]
+  });
+}
+
+// =========================
+// RENDER ALL
 // =========================
 function renderAll() {
   renderDevices();
@@ -151,7 +179,6 @@ function renderDevices() {
   const grouped = {};
 
   for (const d of devices) {
-
     const orgName =
       window.atlasData.orgs?.[d.orgId]?.orgName ||
       `Org ${d.orgId}`;
@@ -181,7 +208,7 @@ function renderDevices() {
 
 
 // =========================
-// MARKER + ACCURACY CIRCLE (FIXED)
+// MARKER
 // =========================
 function addOrUpdateMarker(orgName, device) {
 
@@ -193,36 +220,19 @@ function addOrUpdateMarker(orgName, device) {
   const markers = orgMarkers[orgName];
   let marker = markers[device.deviceId];
 
-  function timeAgo(timestamp) {
-    if (!timestamp) return "-";
-    const seconds = Math.floor((Date.now() - new Date(timestamp)) / 1000);
-
-    if (seconds < 60) return `${seconds}s ago`;
-    if (seconds < 3600) return `${Math.floor(seconds / 60)}m ago`;
-    if (seconds < 86400) return `${Math.floor(seconds / 3600)}h ago`;
-    return `${Math.floor(seconds / 86400)}d ago`;
-  }
-
-  const lastSeenFormatted = device.lastSeen
-    ? `${timeAgo(device.lastSeen)} (${new Date(device.lastSeen).toLocaleString()})`
-    : "N/A";
-
   const popup = `
     <b>${device.name}</b><br>
     Battery: ${device.battPercent ?? "N/A"}%<br>
     Accuracy: ${device.acc ?? "N/A"} m<br>
-    Last Seen: ${lastSeenFormatted}
+    Last Seen: ${device.lastSeen ? new Date(device.lastSeen).toLocaleString() : "N/A"}
   `;
 
-  // =========================
-  // UPDATE EXISTING
-  // =========================
+  // UPDATE
   if (marker) {
-
     marker.setLatLng([lat, lon]);
+    marker.setIcon(createDeviceIcon(device.name)); // 👈 update label
     marker.setPopupContent(popup);
 
-    // UPDATE CIRCLE
     if (marker.circle) {
       marker.circle.setLatLng([lat, lon]);
       marker.circle.setRadius(device.acc || 0);
@@ -231,26 +241,17 @@ function addOrUpdateMarker(orgName, device) {
     return;
   }
 
-  // =========================
-  // CREATE MARKER
-  // =========================
-    marker = L.circleMarker([lat, lon], {
-    radius: 10,                 
-    color: "#6c6f85",          
-    fillColor: "#6c6f85",      
-    fillOpacity: 1,
-    weight: 1
+  // CREATE
+  marker = L.marker([lat, lon], {
+    icon: createDeviceIcon(device.name)
   })
-  .bindPopup(popup)
-  .addTo(orgLayers[orgName]);
+    .bindPopup(popup)
+    .addTo(orgLayers[orgName]);
 
-  // =========================
-  // CREATE ACCURACY CIRCLE
-  // =========================
   const circle = L.circle([lat, lon], {
     radius: device.acc || 0,
-    color: "#6c6f85",
-    fillColor: "#6c6f85",
+    color: "#40a02b",
+    fillColor: "#40a02b",
     fillOpacity: 0.15,
     weight: 1
   }).addTo(orgLayers[orgName]);
@@ -288,6 +289,10 @@ function cleanupMarkers(orgName, activeSet) {
 // =========================
 function renderSites() {
 
+  for (const orgName in orgSiteLayers) {
+    orgSiteLayers[orgName].clearLayers(); // prevent duplicates
+  }
+
   for (const site of Object.values(window.atlasData.sites || [])) {
 
     const orgName =
@@ -308,8 +313,11 @@ function renderSites() {
         .map(p => [Number(p.lat), Number(p.lon)]);
 
       if (latlngs.length >= 3) {
+
+        const isHQ = Number(site.hq) === 1;
+
         L.polygon(latlngs, {
-          color: site.hq ? "#fe640b" : "#8839ef",
+          color: isHQ ? "#fe640b" : "#8839ef",
           fillOpacity: 0.1
         }).addTo(layer);
       }
