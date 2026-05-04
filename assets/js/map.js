@@ -235,9 +235,9 @@ function addOrUpdateMarker(orgName, device) {
   // CREATE MARKER
   // =========================
     marker = L.circleMarker([lat, lon], {
-    radius: 5,                 
-    color: "#4c4f69",          
-    fillColor: "#40a02b",      
+    radius: 10,                 
+    color: "#6c6f85",          
+    fillColor: "#6c6f85",      
     fillOpacity: 1,
     weight: 1
   })
