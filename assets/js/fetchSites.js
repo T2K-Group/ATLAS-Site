@@ -106,7 +106,10 @@ function exportOrgSitesToCSV(org) {
         ["Name", "Address", "Postcode", "Latitude", "Longitude"]
     ];
 
-    org.sites.forEach(site => {
+    org.sites
+        .slice()
+        .sort((a, b) => (a.name || "").localeCompare(b.name || ""))
+        .forEach(site => {
 
         const centroid = getPolygonCentroid(site.polygon_points);
 
