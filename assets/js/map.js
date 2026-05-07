@@ -20,7 +20,7 @@ let layerControl;
 // =========================
 document.addEventListener("DOMContentLoaded", async () => {
 
-  map = L.map("map").setView([54.5, -3], 6);
+  map = L.map("map").setView([50.3952644,-4.1259488], 13);
 
   L.control.fullscreen({
     position: "topleft"
@@ -294,6 +294,10 @@ function renderSites() {
   }
 
   for (const site of Object.values(window.atlasData.sites || [])) {
+
+    if (!site.active){
+      continue
+    }
 
     const orgName =
       window.atlasData.orgs?.[site.orgId]?.orgName ||
