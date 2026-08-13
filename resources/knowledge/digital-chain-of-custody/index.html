@@ -4,8 +4,8 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <meta name="robots" content="noindex,nofollow">
-  <meta name="description" content="Learn how a digital chain of custody records the movement, status and operational context of physical assets for visibility, audit and investigation.">
-  <title>What Is a Digital Chain of Custody for Physical Assets? | ATLAS</title>
+  <meta name="description" content="Learn what a digital chain of custody is, how it differs from GPS tracking, and how location, sensor data and immutable logs can create an auditable asset history.">
+  <title>What Is a Digital Chain of Custody? A Guide to Asset Tracking | ATLAS</title>
   <link rel="stylesheet" href="../../../assets/marketing-pages.css">
   <script src="../../../assets/marketing-pages.js" defer></script>
   <style>
@@ -16,10 +16,10 @@
   <link rel="canonical" href="https://atlas-tracking.co.uk/resources/knowledge/digital-chain-of-custody/">
   <meta property="og:type" content="article">
   <meta property="og:site_name" content="ATLAS by T2K Group">
-  <meta property="og:title" content="What Is a Digital Chain of Custody for Physical Assets? | ATLAS">
-  <meta property="og:description" content="Learn how a digital chain of custody records the movement, status and operational context of physical assets for visibility, audit and investigation.">
+  <meta property="og:title" content="What Is a Digital Chain of Custody? A Guide to Asset Tracking | ATLAS">
+  <meta property="og:description" content="Learn what a digital chain of custody is, how it differs from GPS tracking, and how location, sensor data and immutable logs can create an auditable asset history.">
   <meta property="og:url" content="https://atlas-tracking.co.uk/resources/knowledge/digital-chain-of-custody/">
-  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"What Is a Digital Chain of Custody for Physical Assets?","description":"Learn how a digital chain of custody records the movement, status and operational context of physical assets for visibility, audit and investigation.","datePublished":"2026-08-04","dateModified":"2026-08-09","author":{"@type":"Organization","name":"ATLAS Engineering Team"},"publisher":{"@type":"Organization","name":"ATLAS by T2K Group","url":"https://atlas-tracking.co.uk/"},"mainEntityOfPage":"https://atlas-tracking.co.uk/resources/knowledge/digital-chain-of-custody/"}</script>
+  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"What Is a Digital Chain of Custody? A Guide to Asset Tracking","description":"Learn what a digital chain of custody is, how it differs from GPS tracking, and how location, sensor data and immutable logs can create an auditable asset history.","datePublished":"2026-08-04","dateModified":"2026-08-13","author":{"@type":"Person","name":"Jack Fitton","jobTitle":"ATLAS Engineer","url":"https://www.linkedin.com/in/jack-fitton/"},"publisher":{"@type":"Organization","name":"ATLAS by T2K Group","url":"https://atlas-tracking.co.uk/"},"mainEntityOfPage":"https://atlas-tracking.co.uk/resources/knowledge/digital-chain-of-custody/"}</script>
   <script type="application/ld+json">{"@context":"https://schema.org","@type":"BreadcrumbList","itemListElement":[{"@type":"ListItem","position":1,"name":"Home","item":"https://atlas-tracking.co.uk/"},{"@type":"ListItem","position":2,"name":"Resources","item":"https://atlas-tracking.co.uk/resources/"},{"@type":"ListItem","position":3,"name":"Knowledge","item":"https://atlas-tracking.co.uk/resources/knowledge/"},{"@type":"ListItem","position":4,"name":"Digital Chain of Custody","item":"https://atlas-tracking.co.uk/resources/knowledge/digital-chain-of-custody/"}]}</script>
 </head>
 <body class="marketing-site">
@@ -31,68 +31,96 @@
   </div></header>
 
   <main>
-    <section class="article-hero"><div class="site-wrap"><nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../../">Home</a><span aria-hidden="true">/</span><a href="../../">Resources</a><span aria-hidden="true">/</span><a href="../">Knowledge</a><span aria-hidden="true">/</span><span aria-current="page">Digital chain of custody</span></nav><div class="article-hero-copy"><span class="eyebrow">Digital Chain of Custody</span><h1>What Is a Digital Chain of Custody for Physical Assets?</h1><p class="article-summary">A practical guide to turning location, movement and operational events into a useful record of a physical asset’s journey—before, during and after an important operation.</p><div class="article-meta"><span class="author"><span class="author-avatar" aria-hidden="true">AT</span><span><strong>ATLAS Engineering Team</strong><br>Hardware and software specialists at T2K Group</span></span><time datetime="2026-08-04">Published 4 August 2026</time><time datetime="2026-08-09">Reviewed 9 August 2026</time><span>8 min read</span></div></div></div></section>
+    <section class="article-hero"><div class="site-wrap"><nav class="breadcrumbs" aria-label="Breadcrumb"><a href="../../../">Home</a><span aria-hidden="true">/</span><a href="../../">Resources</a><span aria-hidden="true">/</span><a href="../">Knowledge</a><span aria-hidden="true">/</span><span aria-current="page">Digital chain of custody</span></nav><div class="article-hero-copy"><span class="eyebrow">Digital Chain of Custody</span><h1>What Is a Digital Chain of Custody?</h1><p class="article-summary">Learn how location, timestamps, sensor readings and operational events can create an auditable history of a physical asset’s journey.</p><div class="article-meta"><span class="author"><span class="author-avatar" aria-hidden="true">JF</span><span><strong><a href="https://www.linkedin.com/in/jack-fitton/" target="_blank" rel="noopener noreferrer">Jack Fitton</a></strong><br>ATLAS Engineer</span></span><time datetime="2026-08-04">Published 4 August 2026</time><time datetime="2026-08-13">Updated 13 August 2026</time><span>8 min read</span></div></div></div></section>
 
     <section class="section section-soft"><div class="site-wrap"><div class="asset-placeholder" role="img" aria-label="Placeholder for asset journey linking tracker events to an operational record and report"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"></rect><circle cx="9" cy="10" r="2"></circle><path d="m5 17 4-4 3 3 2-2 5 3"></path></svg><strong>Image placeholder</strong><span>Replace with the approved final asset</span></div></div></section>
 
     <section class="section"><div class="site-wrap article-layout">
-      <aside class="article-toc"><strong>In this guide</strong><a href="#beyond-dot">Beyond the dot</a><a href="#definition">A working definition</a><a href="#four-layers">Four layers</a><a href="#how-it-works">How it works</a><a href="#operations">Operational value</a><a href="#elections">Election use</a><a href="#good-record">A useful record</a><a href="#comparison">GPS comparison</a><a href="#related-terms">Related terms</a><a href="#article-faq">FAQ</a></aside>
+      <aside class="article-toc"><strong>In this guide</strong><a href="#definition">What it means</a><a href="#gps-comparison">Beyond GPS tracking</a><a href="#auditable-history">Why history matters</a><a href="#recorded-information">What can be recorded</a><a href="#immutable-logs">Immutable logs</a><a href="#connectivity">Poor mobile coverage</a><a href="#physical-procedures">Physical procedures</a><a href="#use-cases">Where it is useful</a><a href="#elections">Ballot-box tracking</a><a href="#atlas-approach">The ATLAS approach</a></aside>
       <article class="article-prose">
-        <p class="lead">In ATLAS, digital chain of custody means creating a retained electronic record of the movement, status and operational context of a physical asset. It is different from a simple live GPS location, a traditional paper log and the use of “chain of custody” for digital-forensics evidence.</p>
-        <p>Knowing where a critical asset is right now can answer an urgent question. Knowing where it has been, what happened around it and how the record was handled can answer the questions that follow.</p>
+        <p class="lead">Knowing where an asset is can be useful. Knowing <strong>where it has been, when it moved, what happened during the journey and what conditions it experienced</strong> can be much more valuable.</p>
+        <p>That is the idea behind a digital chain of custody.</p>
+        <p>A traditional GPS tracker is usually designed to answer a simple question: <strong>where is this asset now?</strong> A digital chain-of-custody platform goes further by bringing together location history, timestamps, sensor readings and operational events into a single, auditable record.</p>
+        <p>For organisations responsible for important, sensitive or high-value assets, that wider history can make it much easier to understand what happened during an asset’s journey without relying only on phone calls, messages or individual recollection.</p>
 
-        <h2 id="beyond-dot">Beyond a dot on a map</h2>
-        <p>Basic asset tracking is usually centred on the latest position. That position can reduce uncertainty, but it says little about the journey that led there. If an asset arrived late, moved away from an expected location or was involved in an incident, a current location alone cannot explain the sequence.</p>
-        <p>A digital chain of custody adds continuity and context. It brings together an identified asset, its recorded movements, relevant device or site events, and accountable user actions. The result is an operational history that can be searched and reviewed rather than reconstructed from memory, spreadsheets and phone calls.</p>
-        <blockquote class="article-quote">ATLAS is not simply a GPS tracker. It is a digital chain-of-custody platform built around the complete asset journey.</blockquote>
+        <h2 id="definition">What does “digital chain of custody” mean?</h2>
+        <p>A digital chain of custody is a chronological record of an asset’s journey and the events associated with it.</p>
+        <p>That record can include information such as:</p>
+        <ul><li>GPS location and historical routes</li><li>timestamps</li><li>movement events</li><li>box or enclosure-open events</li><li>temperature</li><li>humidity</li><li>free-fall or impact events</li><li>immutable system logs</li></ul>
+        <p>The exact data captured depends on the device and deployment, but the principle is the same: instead of looking at individual pieces of information in isolation, the platform connects them into an operational history.</p>
+        <p>This creates a single place where authorised users can review what the system recorded over time.</p>
 
-        <h2 id="definition">A practical definition</h2>
-        <p>A digital chain of custody is a chronological record that helps an authorised team understand the location, movement and operational context of a defined asset over time. It complements the organisation’s physical custody processes; it does not replace staff responsibilities, documented handovers or the controls required for a particular operation.</p>
-        <p>The word <em>digital</em> matters because relevant events can be captured consistently and made available to authorised users in a shared platform. The phrase <em>chain of custody</em> matters because the history is connected to a known asset and can support accountability across its journey.</p>
-        <div class="article-note"><strong>Important distinction:</strong> an ATLAS record can support operational review, reporting and investigation. Whether any record is admissible or sufficient for a particular legal, regulatory or evidential purpose depends on the circumstances and should be assessed independently.</div>
+        <h2 id="gps-comparison">GPS tracking and digital chain of custody are not the same thing</h2>
+        <p>GPS tracking is an important part of a digital chain of custody, but it is only one part.</p>
+        <p>Imagine that you are responsible for a sensitive asset travelling between two locations. A GPS tracker may tell you that the asset is currently at its destination.</p>
+        <p>That is useful, but it leaves a number of questions unanswered:</p>
+        <ul><li>What route did it take?</li><li>What time did it leave?</li><li>When did it arrive?</li><li>Was it moved after arrival?</li><li>Was its enclosure opened during the journey?</li><li>Did it experience a sudden drop or impact?</li><li>Was it exposed to unusual temperature or humidity?</li></ul>
+        <p>If those questions matter to your operation, a latest-position marker on a map is not enough.</p>
+        <p>A digital chain of custody is designed to preserve the wider context around the journey.</p>
 
-        <h2 id="four-layers">The four layers of a useful record</h2>
-        <div class="principle-grid">
-          <div class="principle"><span>01 · Identity</span><strong>Know what is being monitored</strong><p>Associate the physical asset with a known tracker and a recognisable record in the platform.</p></div>
-          <div class="principle"><span>02 · Movement</span><strong>Retain the journey</strong><p>Record current and historical locations so a team can follow movement over time.</p></div>
-          <div class="principle"><span>03 · Context</span><strong>Explain each event</strong><p>Use sites, geofences, device status and relevant telemetry to add meaning to position data.</p></div>
-          <div class="principle"><span>04 · Accountability</span><strong>Record authorised actions</strong><p>Keep user and system activity available for review, including changes and report generation.</p></div>
-        </div>
+        <h2 id="auditable-history">Why an auditable history matters</h2>
+        <p>Many organisations still manage asset movements through a mixture of phone calls, spreadsheets, messaging apps and verbal updates. That can work perfectly well when everything goes to plan.</p>
+        <p>The difficulty appears when someone later needs to understand exactly what happened.</p>
+        <p>One person may remember an asset arriving at 14:30. Another may have a WhatsApp message sent at 14:42. A spreadsheet may have been updated later in the afternoon. The driver may remember taking a different route.</p>
+        <p>None of those sources is necessarily wrong, but they do not create a single operational record.</p>
+        <p>A digital chain-of-custody platform brings the information recorded by the tracking system into one place, creating an auditable timeline that can be reviewed later.</p>
+        <div class="article-note"><strong>Important distinction:</strong> the value is not in claiming that the system can prove every real-world event. It is in creating a consistent record of the locations, sensor readings and device events captured during the operation.</div>
 
-        <h2 id="how-it-works">How the record is formed</h2>
-        <p>The tracker, connectivity and platform work as one operational path. A tracker travels with the asset and reports its available location and device information. Connectivity carries that information to ATLAS. The platform organises it into a live view and retains it as history for later review and reporting.</p>
-        <div class="asset-placeholder" role="img" aria-label="Placeholder for the chain-of-custody process image"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="2"></rect><circle cx="9" cy="10" r="2"></circle><path d="m5 17 4-4 3 3 2-2 5 3"></path></svg><strong>Image placeholder</strong><span>Replace with the approved final asset</span></div>
-        <p>Real operations do not always have uninterrupted mobile coverage. ATLAS uses multi-network connectivity designed to improve resilience. Where connectivity is temporarily unavailable, location information can be retained and uploaded when connectivity returns. The live view may be delayed during that gap, but the retained information can help preserve the recorded journey.</p>
+        <h2 id="recorded-information">What information can form part of a digital chain of custody?</h2>
+        <p>Location is usually the starting point, but it becomes much more useful when combined with other data.</p>
+        <h3>Location and historical routes</h3><p>Live location helps an operations team understand where an asset is now. Historical routes make it possible to look back at the journey afterwards and review where the asset travelled over a particular period.</p><p>This can be especially useful when the expected route and the actual route are different, or when an operational team needs to understand a delay.</p>
+        <h3>Timestamps</h3><p>Events become significantly more useful when they are tied to time. A record that an asset moved is helpful. A record showing that it moved at 11:43, arrived at another location at 12:18 and was opened at 12:26 provides much more operational context.</p>
+        <h3>Movement events</h3><p>A tracking device can record when an asset begins moving or when movement occurs after it was expected to remain stationary. For some organisations, that may be more important than constantly watching a map.</p>
+        <h3>Box-open events</h3><p>Where the hardware supports it, an enclosure-open event can record that a box, case or container was opened. This does not explain why it was opened or who opened it, but it adds another useful event to the asset’s recorded history.</p>
+        <h3>Temperature and humidity</h3><p>Some assets are sensitive to their environment. Temperature and humidity monitoring can help organisations understand the conditions an asset experienced during storage or transport rather than relying only on conditions measured at the start or end of a journey.</p>
+        <h3>Free-fall and impact events</h3><p>A free-fall event can indicate that an asset or its tracking device experienced a sudden drop. Again, the event itself does not tell the entire story, but it can provide useful context when reviewing the journey of fragile or important equipment.</p>
 
-        <h2 id="operations">What this changes operationally</h2>
-        <h3>A shared picture</h3>
-        <p>Instead of asking multiple people to confirm locations by phone, an authorised operations team can use a common view of current asset positions and status. Staff can spend more time handling exceptions and less time compiling routine updates.</p>
-        <h3>Earlier awareness</h3>
-        <p>Sites and geofences add meaning to location. Teams can see whether an asset is at an expected operational location, in transit or outside a defined site, then decide what follow-up is appropriate.</p>
-        <h3>Faster investigation</h3>
-        <p>When something unexpected happens, historical movement and event information provides a starting point. A reviewer can select the asset, inspect the sequence and use reporting tools to assemble relevant information.</p>
-        <h3>More consistent accountability</h3>
-        <p>Audit activity can capture user and system actions alongside the asset record. This gives administrators a clearer view of what changed, when it changed and which account initiated an action.</p>
+        <h2 id="immutable-logs">Why immutable logs are important</h2>
+        <p>An audit trail is only useful if the history of the system can be trusted as a record of what the platform captured.</p>
+        <p>ATLAS uses immutable logs so that recorded events form a persistent operational history.</p>
+        <p>For authorised users, that means there is a consistent timeline available for later review rather than a collection of separate updates that may have been edited, misplaced or remembered differently.</p>
+        <p>This is one of the key differences between simply receiving tracking updates and maintaining a digital chain of custody.</p>
 
-        <h2 id="elections">Why elections are a strong example</h2>
-        <p>Election operations involve critical assets moving between multiple locations within a defined timeframe. Existing processes, trained staff and physical controls remain central. Digital chain of custody can add operational visibility without displacing those arrangements.</p>
-        <p>An operations team can monitor election assets in transit, confirm that assets have reached expected destinations, retain historical movement information and refer back to the timeline if an incident needs investigation. The same principles can support election-asset visibility without replacing established physical custody procedures.</p>
+        <h2 id="connectivity">What happens when mobile coverage is poor?</h2>
+        <p>Any connected tracking system has to deal with the realities of mobile coverage.</p>
+        <p>A tracker may move through rural areas, large buildings, basements or other places where one mobile network has limited or no signal.</p>
+        <p>ATLAS devices use multi-network SIM cards so they can connect across multiple available mobile networks rather than depending on a single network provider.</p>
+        <p>That does not mean mobile dead zones disappear entirely. No cellular tracking system can guarantee continuous coverage everywhere.</p>
+        <p>Instead, multi-network connectivity can improve the opportunity for the device to remain connected as it moves between areas with different network coverage. Where a device is configured to retain data during a temporary loss of connectivity, recorded information can be transmitted when a connection becomes available again.</p>
+        <p>The result is a more resilient approach than relying on one network alone.</p>
 
-        <h2 id="good-record">What makes the record useful?</h2>
-        <p>More data is not automatically better. A useful digital chain of custody should be designed around decisions the team may need to make. Before deployment, organisations should define:</p>
-        <ul><li>which assets are important enough to monitor;</li><li>how each tracker will be associated with an asset;</li><li>which sites, destinations or journey stages matter;</li><li>who needs live visibility and who may review historical information;</li><li>which events require an operational response;</li><li>how long information should be available, subject to approved policies; and</li><li>how digital records complement existing physical and procedural controls.</li></ul>
-        <p>That preparation turns tracking data into an operational tool. The platform then supports a simple progression: see what is happening, understand the history and produce a record when review is needed.</p>
+        <h2 id="physical-procedures">Digital chain of custody does not replace physical procedures</h2>
+        <p>A digital chain of custody should not be confused with the physical procedures an organisation uses to control access to an asset.</p>
+        <p>Physical seals, staff responsibilities, authorised handovers, secure storage, sign-off procedures and organisational policies may all remain important.</p>
+        <p>The digital platform supports those procedures by providing an auditable record of the information captured by the tracking system.</p>
+        <p>It can help an organisation answer questions about an asset’s recorded journey, but it does not replace good operational controls.</p>
+        <p>The strongest deployments usually combine both.</p>
 
-        <h2 id="comparison">GPS tracker vs an ATLAS operational record</h2>
-        <div class="legal-table-wrap"><table class="legal-table"><thead><tr><th>Capability</th><th>Basic live GPS location</th><th>ATLAS-style operational record</th></tr></thead><tbody><tr><td>Latest reported position</td><td>Usually available</td><td>Available with asset status and context</td></tr><tr><td>Physical-asset identity</td><td>May rely on a device label</td><td>Connects the tracker to a defined asset record</td></tr><tr><td>Movement history</td><td>Varies by product</td><td>Retained for authorised operational review</td></tr><tr><td>Condition and events</td><td>Not normally central</td><td>Can sit alongside location where supported</td></tr><tr><td>Controlled team access</td><td>Varies</td><td>Role-based operational access</td></tr><tr><td>Audit and reporting</td><td>Often limited</td><td>Designed to support review and reporting</td></tr></tbody></table></div>
+        <h2 id="use-cases">Where can digital chain of custody be useful?</h2>
+        <p>Digital chain of custody can be useful anywhere the history of an asset matters as much as its current location.</p>
+        <p>Examples may include:</p>
+        <ul><li>high-value equipment moving between sites</li><li>sensitive public-sector assets</li><li>temperature-sensitive goods</li><li>remote or temporary equipment</li><li>secure deliveries</li><li>reusable transport cases or containers</li><li>election equipment and ballot-box movements</li><li>assets where unexpected movement or opening needs to be reviewed</li></ul>
+        <p>It is not necessary for every tracking use case. If all you need to know is roughly where a low-risk asset is, a conventional GPS tracker may be enough.</p>
+        <blockquote class="article-quote">Digital chain of custody becomes more relevant when someone may later need to ask: “What happened to this asset during its journey?”</blockquote>
 
-        <h2 id="related-terms">Related terms</h2>
-        <p><strong>Asset chain of custody</strong> describes the connected record and controls around a physical asset’s journey. <strong>Asset movement history</strong> is the chronological location record. An <strong>asset tracking audit trail</strong> adds relevant user, system and operational events for later review.</p>
+        <h2 id="elections">A real-world example: ballot-box tracking</h2>
+        <p>During the 2024 UK Parliamentary election, ATLAS was used to support the tracking of ballot boxes for Plymouth City Council.</p>
+        <p>Election logistics are a good example of why an operational history can matter. Teams are coordinating time-sensitive movements across multiple locations, with many people involved and very little room for confusion.</p>
+        <p>In that environment, a tracking platform can give authorised users visibility of asset movements and provide a historical record that can be reviewed afterwards.</p>
+        <p>Elections are only one example. The same underlying principle applies in commercial, industrial and public-sector operations: when an asset matters, the ability to review its journey can be valuable.</p>
 
-        <h2 id="article-faq">Frequently asked questions</h2>
-        <h3>Is digital chain of custody the same as GPS tracking?</h3><p>No. GPS can provide a reported position. A physical-asset chain of custody connects location with asset identity, movement history, operational context and accountable access.</p>
-        <h3>Does a digital record replace physical custody controls?</h3><p>No. It complements staff responsibilities, handovers, seals, transport procedures and any controls required for the operation.</p>
-        <h3>What happens when connectivity is interrupted?</h3><p>Live visibility may pause. ATLAS trackers can retain location information during a temporary service gap and upload it when connectivity returns, helping preserve the historical journey.</p>
+        <h2 id="questions">From “where is it?” to “what happened?”</h2>
+        <p>The simplest way to understand digital chain of custody is to compare the questions being asked.</p>
+        <div class="principle-grid"><div class="principle"><span>Basic tracking</span><strong>Where is it?</strong><p>Shows the latest reported position of an asset.</p></div><div class="principle"><span>Digital chain of custody</span><strong>What happened?</strong><p>Shows where it has been, when it moved, which events were recorded and what conditions it experienced.</p></div></div>
+        <p>That difference changes tracking from a live-location tool into an operational record. For many organisations, that historical context is where much of the value lies.</p>
+
+        <h2 id="atlas-approach">How ATLAS approaches digital chain of custody</h2>
+        <p>ATLAS combines asset tracking with a secure platform designed to give authorised users visibility of both current and historical activity.</p>
+        <p>Depending on the tracking device and deployment, that can include location, historical routes, timestamps, movement, temperature, humidity, box-open events and free-fall detection.</p>
+        <p>The platform brings those events together into an auditable history supported by immutable logs.</p>
+        <p>That means teams do not have to rely solely on individual messages, calls or recollections when they need to understand an asset’s recorded journey.</p>
+        <p>ATLAS is not simply about putting another dot on a map. It is about giving organisations a clearer operational history of the assets they are responsible for.</p>
+        <p><strong>If the journey matters as much as the destination, digital chain of custody may be worth considering.</strong></p>
       </article>
     </div></section>
 
