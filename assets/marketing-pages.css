@@ -258,10 +258,24 @@ img, svg { max-width: 100%; }
 .map-popup-metrics strong.low { color: #b42318; }
 .map-popup-metrics em { margin-top: 1px; color: #98a2b3; font-size: 8px; font-style: normal; }
 .map-popup-foot { padding: 7px 14px; border-top: 1px solid #e4e7ec; background: #f9fafb; color: #98a2b3; font-size: 8px; text-align: center; text-transform: uppercase; letter-spacing: .05em; }
+.history-map-frame { align-self: stretch; min-height: 510px; display: grid; grid-template-rows: auto minmax(0,1fr) auto; }
+.solutions-history-map { height: 100%; min-height: 430px; background-image: url("images/product-line.png"); }
+.history-point-icon { background: transparent !important; border: 0 !important; }
+.history-point-icon span { width: 27px; height: 27px; display: grid; place-items: center; border: 3px solid #fff; border-radius: 50%; background: #2563eb; color: #fff; font-size: 9px; font-weight: 900; box-shadow: 0 3px 9px rgba(15,23,42,.32); }
+.history-point-icon.current span { background: #067647; box-shadow: 0 0 0 5px rgba(6,118,71,.15),0 3px 9px rgba(15,23,42,.32); }
+.history-map-popup .map-popup-head { padding-block: 11px; }
+.history-map-popup .map-popup-timestamp { display: block; margin-top: 3px; color: #475467; font-size: 9px; font-weight: 750; }
+.history-map-popup .map-popup-metrics { grid-template-columns: repeat(2,minmax(0,1fr)); }
+.history-route-card { width: 130px; padding: 7px 9px; border: 1px solid rgba(37,99,235,.2); border-radius: 9px; background: rgba(255,255,255,.96); box-shadow: 0 7px 18px rgba(15,23,42,.13); color: #17202a; font-family: Inter,ui-sans-serif,system-ui,sans-serif; }
+.history-route-card strong, .history-route-card span { display: block; }
+.history-route-card strong { font-size: 9px; }
+.history-route-card span { margin-top: 2px; color: #667085; font-size: 7px; }
+.history-route-tooltip { border: 0 !important; padding: 0 !important; background: transparent !important; box-shadow: none !important; }
+.history-route-tooltip::before { display: none; }
 .brand-wordmark-visual { min-height: 300px; display: grid; place-items: center; border-radius: 18px; background: #dbeafe; color: #2563eb; font-family: Arial Black, Arial, sans-serif; font-size: clamp(44px,8vw,92px); font-weight: 900; letter-spacing: -.06em; }
 .t2k-logo-visual { min-height: 300px; display: grid; place-items: center; padding: 42px; border: 1px solid var(--border); border-radius: 14px; background: #fff; }
 .t2k-logo-visual img { width: min(300px,80%); height: auto; }
-@media (max-width:650px) { .homepage-live-map { height: 340px; } .homepage-map-toolbar small { display: none; } }
+@media (max-width:650px) { .homepage-live-map { height: 340px; } .homepage-map-toolbar small { display: none; } .history-map-frame { min-height: 430px; } .solutions-history-map { min-height: 350px; } .history-route-tooltip { display: none; } }
 .form-actions { display: flex; align-items: center; justify-content: space-between; gap: 15px; margin-top: 20px; }
 .contact-sidebar { display: grid; gap: 14px; }
 .contact-sidebar .contact-card { min-width: 0; }

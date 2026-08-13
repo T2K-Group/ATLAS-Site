@@ -1,0 +1,169 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="description" content="Public ATLAS product documentation for trackers, sites, geofences, users, roles, logs, notifications and reporting.">
+  <title>ATLAS Product Documentation | Critical Asset Tracking</title>
+  <link rel="canonical" href="https://atlas-tracking.co.uk/docs.html">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="ATLAS by T2K Group">
+  <meta property="og:title" content="ATLAS Product Documentation | Critical Asset Tracking">
+  <meta property="og:description" content="Public ATLAS product documentation for trackers, sites, geofences, users, roles, logs, notifications and reporting.">
+  <meta property="og:url" content="https://atlas-tracking.co.uk/docs.html">
+  <link rel="stylesheet" href="assets/styles.css">
+  <link rel="stylesheet" href="assets/header-widgets.css">
+  <style>
+    html { scroll-behavior:smooth; }
+    .docs-page { padding:0; overflow:visible; }
+    .docs-hero { padding:34px 24px 30px; border-bottom:1px solid var(--border); background:linear-gradient(135deg,var(--panel),var(--panel-soft)); }
+    .docs-hero-inner { width:min(1180px,100%); margin:auto; }
+    .docs-kicker { color:var(--accent); font-size:11px; font-weight:900; letter-spacing:.12em; text-transform:uppercase; }
+    .docs-hero h1 { margin:8px 0 8px; font-size:32px; letter-spacing:-.025em; }
+    .docs-hero p { max-width:680px; margin:0; color:var(--muted); font-size:14px; line-height:1.6; }
+    .docs-search { position:relative; max-width:600px; margin-top:20px; }
+    .docs-search svg { position:absolute; left:12px; top:50%; width:18px; color:var(--muted); transform:translateY(-50%); }
+    .docs-search input { width:100%; padding:12px 12px 12px 40px; box-shadow:0 6px 18px rgba(15,23,42,.06); }
+    .docs-layout { width:min(1180px,100%); display:grid; grid-template-columns:230px minmax(0,1fr); gap:34px; margin:auto; padding:28px 22px 60px; }
+    .docs-nav { position:sticky; top:18px; align-self:start; }
+    .docs-nav-title { margin:0 0 8px; color:var(--muted); font-size:10px; font-weight:850; letter-spacing:.08em; text-transform:uppercase; }
+    .docs-nav a { display:block; padding:8px 10px; border-left:2px solid var(--border); color:var(--muted); font-size:12px; font-weight:700; text-decoration:none; }
+    .docs-nav a:hover, .docs-nav a.active { border-color:var(--accent); background:var(--accent-soft); color:var(--accent); }
+    .docs-content { min-width:0; }
+    .doc-section { scroll-margin-top:22px; margin-bottom:42px; }
+    .doc-section[hidden] { display:none; }
+    .doc-section h2 { margin:0 0 8px; font-size:22px; letter-spacing:-.015em; }
+    .doc-section h3 { margin:24px 0 8px; font-size:15px; }
+    .doc-section p, .doc-section li { color:var(--muted); font-size:13px; line-height:1.65; }
+    .doc-section p { margin:8px 0; }
+    .doc-section ul, .doc-section ol { margin:8px 0; padding-left:22px; }
+    .doc-section strong { color:var(--text); }
+    .quick-grid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:12px; margin-top:18px; }
+    .quick-card { display:block; padding:16px; border:1px solid var(--border); border-radius:12px; background:var(--panel); color:var(--text); text-decoration:none; }
+    .quick-card:hover { border-color:var(--accent); transform:translateY(-1px); }
+    .quick-icon { width:34px; height:34px; display:grid; place-items:center; margin-bottom:10px; border-radius:9px; background:var(--accent-soft); color:var(--accent); }
+    .quick-icon svg { width:18px; height:18px; }
+    .quick-card strong { display:block; font-size:13px; }
+    .quick-card span { display:block; margin-top:4px; color:var(--muted); font-size:11px; line-height:1.45; }
+    .callout { margin:16px 0; padding:13px 14px; border:1px solid color-mix(in srgb,var(--accent) 25%,var(--border)); border-left:3px solid var(--accent); border-radius:9px; background:var(--accent-soft); color:var(--muted); font-size:12px; line-height:1.55; }
+    .callout strong { color:var(--accent); }
+    .warning-callout { border-color:color-mix(in srgb,var(--warning) 30%,var(--border)); border-left-color:var(--warning); background:color-mix(in srgb,var(--warning) 7%,var(--panel)); }
+    .warning-callout strong { color:var(--warning); }
+    /* DEMO-ONLY NOTES: remove elements with .demo-only-note for production docs. */
+    .demo-only-note { display:flex; align-items:flex-start; gap:9px; margin:12px 0; padding:10px 12px; border:1px solid color-mix(in srgb,var(--warning) 38%,var(--border)); border-radius:999px; background:color-mix(in srgb,var(--warning) 9%,var(--panel)); color:var(--muted); font-size:11px; line-height:1.45; }
+    .demo-only-badge { flex:0 0 auto; padding:3px 7px; border-radius:999px; background:var(--warning); color:#fff; font-size:9px; font-weight:900; letter-spacing:.06em; text-transform:uppercase; white-space:nowrap; }
+    .demo-only-note strong { color:var(--text); }
+    .steps { display:grid; gap:10px; margin-top:14px; counter-reset:steps; }
+    .step { position:relative; min-height:42px; padding:4px 0 4px 48px; counter-increment:steps; }
+    .step::before { content:counter(steps); position:absolute; left:0; top:0; width:32px; height:32px; display:grid; place-items:center; border-radius:50%; background:var(--accent); color:#fff; font-size:12px; font-weight:850; }
+    .step strong { display:block; font-size:13px; }
+    .step p { margin:2px 0 0; font-size:12px; }
+    .docs-table { width:100%; margin:14px 0; overflow:hidden; border:1px solid var(--border); border-radius:11px; border-collapse:separate; border-spacing:0; }
+    .docs-table th, .docs-table td { padding:10px 12px; border-bottom:1px solid var(--border); text-align:left; vertical-align:top; font-size:12px; line-height:1.5; }
+    .docs-table th { background:var(--panel-soft); color:var(--text); }
+    .docs-table td { color:var(--muted); }
+    .docs-table tr:last-child td { border-bottom:0; }
+    .status-key { display:inline-flex; padding:3px 7px; border-radius:999px; background:var(--panel-soft); color:var(--text); font-size:10px; font-weight:800; }
+    .docs-empty { padding:38px; border:1px dashed var(--border); border-radius:12px; color:var(--muted); text-align:center; }
+    @media(max-width:850px){.docs-layout{grid-template-columns:1fr}.docs-nav{position:static; display:flex; overflow:auto; padding-bottom:4px}.docs-nav-title{display:none}.docs-nav a{flex:0 0 auto; border-left:0;border-bottom:2px solid var(--border)}.quick-grid{grid-template-columns:1fr 1fr}}
+    @media(max-width:560px){.docs-hero{padding:25px 16px}.docs-hero h1{font-size:27px}.docs-layout{padding:20px 14px 45px}.quick-grid{grid-template-columns:1fr}.docs-table-wrap{overflow:auto}.docs-table{min-width:620px}}
+  </style>
+</head>
+<body>
+<div class="app-shell">
+  <header class="topbar">
+    <a class="brand" href="index.html"><div class="brand-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s6-5.3 6-11a6 6 0 1 0-12 0c0 5.7 6 11 6 11Z"></path><circle cx="12" cy="10" r="2"></circle></svg></div><div class="brand-name">ATLAS <span class="brand-subtitle">- Digital Chain of Custody Platform</span></div></a>
+    <nav class="primary-nav" aria-label="Primary navigation">
+      <a class="nav-link" href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s6-5.3 6-11a6 6 0 1 0-12 0c0 5.7 6 11 6 11Z"></path><circle cx="12" cy="10" r="2"></circle></svg><span>Trackers</span></a>
+      <a class="nav-link" href="sites.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V8l7-5 7 5v13M9 21v-6h6v6"></path></svg><span>Sites</span></a>
+      <a class="nav-link" href="users.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"></path></svg><span>Users</span></a>
+      <a class="nav-link" href="logs.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5h10M9 12h10M9 19h10"></path><circle cx="4" cy="5" r="1"></circle><circle cx="4" cy="12" r="1"></circle><circle cx="4" cy="19" r="1"></circle></svg><span>Logs</span></a>
+      <a class="nav-link active" href="docs.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V4H6.5A2.5 2.5 0 0 0 4 6.5z"></path><path d="M4 6.5v13A2.5 2.5 0 0 0 6.5 22H20v-5"></path></svg><span>Docs</span></a>
+    </nav>
+    <div class="topbar-spacer"></div><div class="demo-badge">DEMO</div>
+    <button class="icon-btn" type="button" data-open-modal="settingsModal" aria-label="Open settings"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19 12a7 7 0 0 0-.1-1l2-1.5-2-3.5-2.4 1A7 7 0 0 0 15 6l-.3-2.6h-4L10.4 6A7 7 0 0 0 8 7L5.6 6 3.6 9.5l2 1.5a7 7 0 0 0 0 2l-2 1.5 2 3.5L8 17a7 7 0 0 0 2.4 1l.3 2.6h4L15 18a7 7 0 0 0 2.4-1l2.4 1 2-3.5-2-1.5a7 7 0 0 0 .2-1Z"></path></svg><span>Settings</span></button>
+  </header>
+  <main class="page-content docs-page">
+    <section class="docs-hero"><div class="docs-hero-inner"><div class="docs-kicker">ATLAS help centre</div><h1>Platform documentation</h1><p>Learn how to monitor trackers, manage sites and users, understand telemetry, and review your organisation's audit history.</p><label class="docs-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg><input id="docsSearch" type="search" placeholder="Search the documentation…"></label></div></section>
+    <div class="docs-layout">
+      <nav class="docs-nav" aria-label="Documentation sections"><div class="docs-nav-title">On this page</div><a href="#getting-started">Getting started</a><a href="#trackers">Trackers</a><a href="#telemetry">Telemetry</a><a href="#sites">Sites & geofences</a><a href="#users">Users & seats</a><a href="#roles">Roles</a><a href="#logs">Activity logs</a><a href="#notifications">Notifications</a><a href="#reports">Reports & exports</a><a href="#demo">Demo limitations</a><a href="#faq">Troubleshooting</a></nav>
+      <article class="docs-content" id="docsContent">
+        <section class="doc-section" id="getting-started" data-search="getting started navigation overview quick start settings dark mode">
+          <h2>Getting started</h2><p>ATLAS is a digital chain-of-custody platform for monitoring tracker locations, operational sites, access, and changes. Use the tabs in the top navigation to move between the main areas.</p>
+          <!-- DEMO-ONLY: remove this bubble for production docs. --><div class="demo-only-note"><span class="demo-only-badge">Demo only</span><span><strong>This is a frontend demonstration.</strong> Invites, emails, authentication, exports, reports, live tracking and backend data synchronisation are not operational.</span></div>
+          <div class="quick-grid"><a class="quick-card" href="index.html"><span class="quick-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s6-5.3 6-11a6 6 0 1 0-12 0c0 5.7 6 11 6 11Z"></path></svg></span><strong>Trackers</strong><span>View live positions, device health and site membership.</span></a><a class="quick-card" href="sites.html"><span class="quick-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V8l7-5 7 5v13"></path></svg></span><strong>Sites</strong><span>Create locations and manage circular geofences.</span></a><a class="quick-card" href="users.html"><span class="quick-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="9" cy="7" r="4"></circle><path d="M2 21a7 7 0 0 1 14 0"></path></svg></span><strong>Users</strong><span>Invite people, assign roles and control seats.</span></a></div>
+          <h3>Quick start</h3><div class="steps"><div class="step"><strong>Open Trackers</strong><p>Select a tracker card to focus its map marker and inspect the current location.</p></div><div class="step"><strong>Create operational sites</strong><p>Add your regular facilities and choose an appropriate geofence radius.</p></div><div class="step"><strong>Invite your team</strong><p>Assign the minimum role each person needs. Only active users consume seats.</p></div><div class="step"><strong>Review activity</strong><p>Use Logs and notifications to investigate changes, exports and security events.</p></div></div>
+        </section>
+
+        <section class="doc-section" id="trackers" data-search="trackers map search filter markers field directions accuracy site generate city layer">
+          <h2>Trackers</h2><p>The Trackers page combines a searchable device list with a map. Each card shows its identifier, reported coordinates, GPS accuracy, site membership, last-seen time, battery, and cellular quality.</p>
+          <!-- DEMO-ONLY --><div class="demo-only-note"><span class="demo-only-badge">Demo only</span><span>Tracker positions are randomly generated. <strong>No live devices or tracking API are connected.</strong></span></div>
+          <h3>Finding a tracker</h3><ul><li>Search by tracker number, site, coordinates, battery percentage, signal label, or last-seen text.</li><li>Filter by site membership, low battery, weak signal, or devices not seen for 30 minutes.</li><li><strong>Not at a site (in the field)</strong> isolates trackers that are outside every active geofence.</li><li>The map updates with the list, so hidden results are also removed from the map.</li></ul>
+          <h3>Using the map</h3><ul><li>Select a tracker card to fly to its marker and open the map popup.</li><li>Select <strong>Directions</strong> to open the reported coordinates in Google Maps.</li><li>Use Settings to change the demo city, number of generated trackers, tracker layer, site layer, or colour theme.</li><li>The accuracy circle represents the uncertainty around the reported GPS position.</li></ul>
+          <div class="callout"><strong>Site membership:</strong> a tracker is shown at a site when its reported point falls inside that site's active circular geofence.</div>
+        </section>
+
+        <section class="doc-section" id="telemetry" data-search="battery signal cellular rsrp rsrq telemetry last seen full nearly half low empty excellent good fair poor">
+          <h2>Device telemetry</h2><p>Telemetry appears below the Directions link on each tracker card. Values are currently generated for the demo and are ready to be replaced by device API readings.</p>
+          <!-- DEMO-ONLY --><div class="demo-only-note"><span class="demo-only-badge">Demo only</span><span>Battery, last-seen, RSRP and RSRQ readings are simulated on refresh. <strong>They are not reported by real hardware.</strong></span></div>
+          <div class="docs-table-wrap"><table class="docs-table"><thead><tr><th>Battery level</th><th>Band</th><th>Recommended response</th></tr></thead><tbody><tr><td>80–100%</td><td><span class="status-key">Full</span></td><td>No action required.</td></tr><tr><td>60–79%</td><td><span class="status-key">Nearly full</span></td><td>Normal operation.</td></tr><tr><td>30–59%</td><td><span class="status-key">Half</span></td><td>Monitor during routine checks.</td></tr><tr><td>10–29%</td><td><span class="status-key">Low</span></td><td>Plan charging or replacement.</td></tr><tr><td>0–9%</td><td><span class="status-key">Empty</span></td><td>Immediate attention recommended.</td></tr></tbody></table></div>
+          <h3>Cellular signal</h3><p>Signal quality is calculated from both <strong>RSRP</strong> (received signal power) and <strong>RSRQ</strong> (received signal quality). ATLAS uses the weaker result so it does not overstate connectivity. Hover the signal indicator to see the underlying readings.</p>
+          <div class="docs-table-wrap"><table class="docs-table"><thead><tr><th>Quality</th><th>RSRP threshold</th><th>RSRQ threshold</th></tr></thead><tbody><tr><td>Excellent</td><td>≥ −80 dBm</td><td>≥ −10 dB</td></tr><tr><td>Good</td><td>≥ −90 dBm</td><td>≥ −12 dB</td></tr><tr><td>Fair</td><td>≥ −100 dBm</td><td>≥ −15 dB</td></tr><tr><td>Poor</td><td>≥ −110 dBm</td><td>≥ −20 dB</td></tr><tr><td>No signal</td><td>Below −110 dBm</td><td>Below −20 dB</td></tr></tbody></table></div>
+        </section>
+
+        <section class="doc-section" id="sites" data-search="sites geofence add edit map radius enable disable delete address postcode toast">
+          <h2>Sites and geofences</h2><p>Sites represent operational locations such as hubs, depots, warehouses or customer premises. An active site has a circular geofence defined by a centre point and radius.</p>
+          <!-- DEMO-ONLY --><div class="demo-only-note"><span class="demo-only-badge">Demo only</span><span>Site changes are saved only in this browser. <strong>They are not sent to a database or shared with other users.</strong></span></div>
+          <h3>Add or edit a site</h3><ol><li>Select <strong>Add site</strong>, or Edit on an existing site.</li><li>Enter a name and optional address and postcode.</li><li>Click the editor map or drag the marker to set the centre.</li><li>Choose the radius in metres and save.</li></ol><p>Use Enable or Disable to control whether a geofence participates in tracker membership. A confirmation toast appears after the status changes. Disabled sites remain configured but do not count as active locations.</p>
+          <div class="warning-callout callout"><strong>Deleting sites:</strong> deletion removes the demo record from this browser. Prefer Disable when a location may be needed again.</div>
+        </section>
+
+        <section class="doc-section" id="users" data-search="users invite invitation active inactive disabled seats licences enable delete cancel email name role">
+          <h2>Users and seats</h2><p>The Users page controls organisation membership. The seat counter shows active users against the organisation's 10-seat demo licence.</p>
+          <!-- DEMO-ONLY --><div class="demo-only-note"><span class="demo-only-badge">Demo only</span><span><strong>Invitations do not send email and users cannot actually join or sign in.</strong> User changes and the 10-seat licence are stored only in this browser.</span></div>
+          <div class="docs-table-wrap"><table class="docs-table"><thead><tr><th>Status</th><th>Meaning</th><th>Consumes a seat?</th><th>Available actions</th></tr></thead><tbody><tr><td>Invited</td><td>An invitation has been created but not accepted.</td><td>No</td><td>Edit details or cancel invitation.</td></tr><tr><td>Active</td><td>The user has joined and can sign in.</td><td>Yes</td><td>Edit or disable.</td></tr><tr><td>Inactive</td><td>Platform access is disabled.</td><td>No</td><td>Edit, enable or permanently delete.</td></tr></tbody></table></div>
+          <h3>Invite a user</h3><ol><li>Select <strong>Invite user</strong>.</li><li>Provide the person's name, email address and role.</li><li>Select Send invite. The demo creates the invitation but does not send an email.</li><li>When the future invitation service reports acceptance, the user automatically becomes Active if a seat is available.</li></ol><p>Deletion is only offered for inactive users and requires confirmation. If all seats are assigned, disable another active user before enabling someone else.</p>
+        </section>
+
+        <section class="doc-section" id="roles" data-search="roles viewer operator administrator owner auditor permissions exports settings audit read only">
+          <h2>Roles and permissions</h2><!-- DEMO-ONLY --><div class="demo-only-note"><span class="demo-only-badge">Demo only</span><span>These roles describe the intended permission model. <strong>There is no backend permission enforcement in this demo.</strong></span></div><div class="docs-table-wrap"><table class="docs-table"><thead><tr><th>Role</th><th>Designed for</th><th>Capabilities</th></tr></thead><tbody><tr><td><strong>Viewer</strong></td><td>Staff needing visibility</td><td>View trackers, sites, statuses and existing reports. No changes, exports or administration.</td></tr><tr><td><strong>Operator</strong></td><td>Day-to-day operations</td><td>Viewer access plus tracker history, report generation/export, and adding, editing, enabling or disabling sites.</td></tr><tr><td><strong>Auditor</strong></td><td>Compliance, legal or security</td><td>Read-only operational, historical, report and audit-log access, including report exports.</td></tr><tr><td><strong>Administrator</strong></td><td>Customer system teams</td><td>Operator access plus site deletion, tracker management, user administration, organisation settings and audit activity.</td></tr><tr><td><strong>Owner</strong></td><td>Account owners</td><td>Full Administrator access plus ownership, administrator assignment and future billing/security controls.</td></tr></tbody></table></div><div class="callout"><strong>Least privilege:</strong> assign the lowest role that allows the person to complete their work. Reserve Administrator and Owner for trusted account managers.</div>
+        </section>
+
+        <section class="doc-section" id="logs" data-search="logs activity audit login changes events ip result search filter security export">
+          <h2>Activity logs</h2><p>Logs provide an organisation-wide audit trail. Entries can include successful and failed logins, invitations, user-role changes, site changes, tracker geofence events, and report exports.</p><!-- DEMO-ONLY --><div class="demo-only-note"><span class="demo-only-badge">Demo only</span><span>Log entries are static examples. <strong>CSV and PDF buttons do not generate or download files.</strong></span></div><ul><li>Search by user, action or event detail.</li><li>Use the action dropdown to isolate logins, created records, changes, exports or security events.</li><li>User names and referenced trackers/sites link back to their relevant pages.</li><li>IP address and result fields help with security investigation.</li><li>CSV and PDF export controls are visible but are not connected in the frontend demo.</li></ul>
+        </section>
+
+        <section class="doc-section" id="notifications" data-search="notifications bell badge geofence failed login profile account logout unread">
+          <h2>Notifications and account menu</h2><p>The bell in the header opens recent operational and security notifications such as geofence entry/exit, failed logins, invitations and site changes. Select a notification to open the relevant page, or choose View all activity.</p><p>The profile image opens account shortcuts for My account, Account settings, My activity and Log out.</p><!-- DEMO-ONLY --><div class="demo-only-note"><span class="demo-only-badge">Demo only</span><span>Notifications are examples and the count is random on refresh. <strong>Account settings and Log out do not work.</strong></span></div>
+        </section>
+
+        <section class="doc-section" id="reports" data-search="reports export csv pdf tracker history date time generate directions">
+          <h2>Reports and exports</h2><p>Use the report button on a tracker card to select a start and end date/time for a tracker report. This is intended for historical movement and chain-of-custody reporting. The Logs page also provides CSV and PDF export controls for audit activity.</p><!-- DEMO-ONLY --><div class="demo-only-note"><span class="demo-only-badge">Demo only</span><span><strong>No reports, CSV files or PDFs are generated.</strong> Export buttons demonstrate the intended workflow only.</span></div>
+        </section>
+
+        <section class="doc-section" id="demo" data-search="demo limitations browser local storage random data api persistence email backend security">
+          <h2>Current demo limitations</h2><ul><li>Tracker positions, battery, cellular readings, last-seen times and notifications are generated demo data.</li><li>Site and user changes are stored in the current browser using local storage; they are not shared between browsers.</li><li>Invitation emails are not sent.</li><li>Authentication, account settings, logout, report files, log exports and billing are not connected.</li><li>Map tiles and Google Maps directions require internet access.</li><li>The role descriptions model intended permissions; production APIs must enforce every permission server-side.</li></ul>
+        </section>
+
+        <section class="doc-section" id="faq" data-search="troubleshooting faq missing trackers map reset data seat site notification dark mode">
+          <h2>Troubleshooting</h2><h3>Why is a tracker missing from the map?</h3><p>Clear the tracker search and set the filter to All trackers. Confirm the tracker layer is enabled in Settings.</p><h3>Why is a tracker not shown at a site?</h3><p>The site's geofence must be active and the tracker coordinates must fall inside its radius. GPS accuracy can also place a reported point outside the expected boundary.</p><h3>Why can’t I enable a user?</h3><p>All 10 active seats may be assigned. Disable an active user to release a seat, then enable the required account.</p><h3>How do I reset browser demo data?</h3><p>Clear this site's local storage in your browser developer tools. Reloading alone preserves site and user changes.</p><h3>Why did the notification count change?</h3><p>The demo deliberately generates a new count on refresh. Production unread counts will persist.</p>
+        </section>
+        <div class="docs-empty" id="docsEmpty" hidden>No documentation sections match your search.</div>
+      </article>
+    </div>
+  </main>
+</div>
+<div class="modal-backdrop" id="settingsModal" hidden><div class="modal" role="dialog" aria-modal="true" aria-labelledby="docsSettingsTitle"><div class="modal-head"><div><div class="modal-title" id="docsSettingsTitle">Settings</div><div class="modal-subtitle">Documentation display options</div></div><button type="button" class="modal-close" data-close-modal="settingsModal" aria-label="Close settings">×</button></div><div class="modal-body"><label class="settings-row"><span><strong>Dark mode</strong><small>Use the dark interface</small></span><input type="checkbox" data-dark-toggle></label></div><div class="modal-actions"><button type="button" data-close-modal="settingsModal">Done</button></div></div></div>
+<script src="assets/common.js"></script>
+<script>
+(() => {
+  const search=document.getElementById("docsSearch"),sections=[...document.querySelectorAll(".doc-section")],empty=document.getElementById("docsEmpty"),links=[...document.querySelectorAll(".docs-nav a")];
+  search.addEventListener("input",()=>{const query=search.value.trim().toLowerCase();let visible=0;sections.forEach(section=>{const matches=!query||(section.dataset.search+" "+section.textContent).toLowerCase().includes(query);section.hidden=!matches;if(matches)visible++;});empty.hidden=visible!==0;});
+  links.forEach(link=>link.addEventListener("click",()=>{links.forEach(item=>item.classList.remove("active"));link.classList.add("active");}));
+  const observer=new IntersectionObserver(entries=>{const current=entries.filter(entry=>entry.isIntersecting).sort((a,b)=>a.boundingClientRect.top-b.boundingClientRect.top)[0];if(!current)return;links.forEach(link=>link.classList.toggle("active",link.hash===`#${current.target.id}`));},{rootMargin:"-15% 0px -75%",threshold:0});sections.forEach(section=>observer.observe(section));
+})();
+</script>
+<script src="assets/header-widgets.js"></script>
+</body>
+</html>

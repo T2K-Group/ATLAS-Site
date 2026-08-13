@@ -7,6 +7,8 @@
   <meta name="description" content="Explore ATLAS solutions for real-time critical asset visibility, physical-asset chain of custody, audit trails, incident investigation and resilient tracking.">
   <title>Critical Asset Visibility & Chain of Custody Solutions | ATLAS</title>
   <link rel="stylesheet" href="../assets/marketing-pages.css?v=20260813-map">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin="" defer></script>
   <link rel="canonical" href="https://atlas-tracking.co.uk/solutions/">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="ATLAS by T2K Group">
@@ -38,7 +40,11 @@
           <p class="hero-lead">ATLAS helps teams see critical assets now, understand where they have been and retain the evidence needed for accountable operations.</p>
           <div class="button-row"><a class="marketing-button primary" href="#solutions">Explore Solutions</a><a class="marketing-button secondary" href="https://demo.atlas-tracking.co.uk">Book a Demo</a></div>
         </div>
-        <img class="page-visual" src="../assets/images/product-line.png" alt="ATLAS map showing the recorded route of a tracked asset across London" width="1080" height="599">
+        <div class="homepage-map-frame history-map-frame">
+          <div class="homepage-map-toolbar"><span><i></i>Recorded asset journey</span><small>Select any point for its full history</small></div>
+          <div id="solutions-history-map" class="homepage-live-map solutions-history-map" data-history-map role="application" aria-label="Interactive demonstration of a tracked asset's historical route across London"></div>
+          <div class="homepage-map-status"><span data-history-map-status>Loading journey history…</span><strong>Demo data</strong></div>
+        </div>
       </div>
     </section>
 

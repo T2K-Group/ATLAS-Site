@@ -273,4 +273,46 @@
       requestAnimationFrame(() => map.invalidateSize());
     }
   }
+
+  const historyMapElement = document.querySelector("[data-history-map]");
+  if (historyMapElement) {
+    const status = document.querySelector("[data-history-map-status]");
+    if (!window.L) {
+      if (status) status.textContent = "Interactive journey map unavailable";
+    } else {
+      const history = [
+        { time: "13 Aug 2026, 08:14:22", place: "Westminster Depot", event: "Journey started", lat: 51.50192, lng: -0.12624, battery: 96, signal: "Excellent · -76 dBm", accuracy: "4 m", source: "GNSS" },
+        { time: "13 Aug 2026, 08:27:09", place: "The Strand", event: "Location recorded", lat: 51.51084, lng: -0.12048, battery: 95, signal: "Excellent · -79 dBm", accuracy: "5 m", source: "GNSS" },
+        { time: "13 Aug 2026, 08:41:36", place: "Fleet Street", event: "Location recorded", lat: 51.51417, lng: -0.10811, battery: 94, signal: "Good · -88 dBm", accuracy: "7 m", source: "GNSS" },
+        { time: "13 Aug 2026, 08:56:11", place: "St Paul's", event: "Location recorded", lat: 51.51458, lng: -0.09808, battery: 93, signal: "Good · -91 dBm", accuracy: "6 m", source: "GNSS" },
+        { time: "13 Aug 2026, 09:12:48", place: "Bank Junction", event: "Geofence entered", lat: 51.51348, lng: -0.08906, battery: 92, signal: "Good · -86 dBm", accuracy: "5 m", source: "GNSS" },
+        { time: "13 Aug 2026, 09:18:03", place: "London Operations Hub", event: "Journey completed", lat: 51.51331, lng: -0.07543, battery: 92, signal: "Excellent · -82 dBm", accuracy: "4 m", source: "GNSS" }
+      ];
+      const map = L.map(historyMapElement, { zoomControl: true, preferCanvas: true, scrollWheelZoom: true });
+      L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
+        subdomains: "abcd", maxZoom: 19, attribution: "&copy; OpenStreetMap contributors &copy; CARTO"
+      }).addTo(map);
+      const route = history.map(point => [point.lat, point.lng]);
+      L.polyline(route, { color: "#fff", weight: 9, opacity: .92 }).addTo(map);
+      L.polyline(route, { color: "#2563eb", weight: 5, opacity: .92 }).addTo(map);
+      history.forEach((point, index) => {
+        const current = index === history.length - 1;
+        const icon = L.divIcon({
+          className: `history-point-icon${current ? " current" : ""}`,
+          html: `<span>${index + 1}</span>`, iconSize: [27, 27], iconAnchor: [13, 13], popupAnchor: [0, -11]
+        });
+        const marker = L.marker([point.lat, point.lng], { icon, title: `${point.place} — ${point.time}` }).addTo(map);
+        marker.bindPopup(`<div class="homepage-map-popup history-map-popup">
+          <div class="map-popup-head"><span class="map-popup-icon">${index + 1}</span><span><strong>${point.place}</strong><small>${point.event}</small><time class="map-popup-timestamp">${point.time}</time></span></div>
+          <div class="map-popup-coordinates"><span>Recorded position</span><code>${point.lat.toFixed(5)}, ${point.lng.toFixed(5)}</code></div>
+          <div class="map-popup-metrics"><span><small>Battery</small><strong class="good">${point.battery}%</strong></span><span><small>Signal</small><strong class="good">${point.signal}</strong></span><span><small>Accuracy</small><strong>${point.accuracy}</strong></span><span><small>Position source</small><strong>${point.source}</strong></span></div>
+          <div class="map-popup-foot">Historical record · simulated demonstration data</div>
+        </div>`, { minWidth: 245, maxWidth: 270 });
+        if (index === 0 || current) marker.bindTooltip(`<div class="history-route-card"><strong>${point.place}</strong><span>${point.time}</span></div>`, { permanent: true, direction: index === 0 ? "top" : "bottom", offset: [0, index === 0 ? -10 : 10], className: "history-route-tooltip" });
+      });
+      map.fitBounds(route, { padding: [34, 34] });
+      if (status) status.textContent = `${history.length} historical points · 1 complete journey · last recorded 09:18:03`;
+      requestAnimationFrame(() => map.invalidateSize());
+    }
+  }
 })();
