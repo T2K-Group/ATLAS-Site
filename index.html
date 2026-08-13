@@ -1,226 +1,62 @@
-<!DOCTYPE html>
-<html lang="en"> 
+<!doctype html>
+<html lang="en">
 <head>
-    <title>ATLAS - Overview</title>
-    
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-    <meta name="description" content="ATLAS Tracking Platform by T2K Group">
-    <meta name="author" content="T2K Group Limited">    
-    <link rel="shortcut icon" href="favicon.ico"> 
-
-    <!-- FontAwesome -->
-    <script defer src="assets/plugins/fontawesome/js/all.min.js"></script>
-    
-    <!-- App CSS -->  
-    <link id="theme-style" rel="stylesheet" href="assets/css/portal.css">
-
-    <!-- Leaflet -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
-
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css"/>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
-
-    <link rel="stylesheet" href="https://unpkg.com/leaflet.fullscreen@2.4.0/Control.FullScreen.css" />
-    <script src="https://unpkg.com/leaflet.fullscreen@2.4.0/Control.FullScreen.js"></script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <meta name="description" content="ATLAS by T2K is a critical asset tracking platform providing real-time visibility, physical-asset movement history and an auditable chain of custody.">
+  <title>ATLAS by T2K | Digital Chain of Custody for Critical Assets</title>
+  <style>
+    :root{--bg:#f4f6f8;--panel:#fff;--panel-soft:#f8fafc;--text:#17202a;--muted:#667085;--border:#d9dee6;--accent:#2563eb;--accent-dark:#1749a4;--accent-soft:rgba(37,99,235,.10);--success:#067647;--warning:#b54708;--danger:#b42318;--shadow:0 18px 55px rgba(15,23,42,.11)}
+    *{box-sizing:border-box}html{scroll-behavior:smooth}html,body{margin:0;min-height:100%;font-family:Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--text)}body{overflow-x:hidden}button,a{font:inherit}a:focus,button:focus{outline:2px solid var(--accent);outline-offset:2px}.site-wrap{width:min(1180px,calc(100% - 40px));margin:auto}
+    .marketing-nav{position:sticky;z-index:2000;top:0;border-bottom:1px solid color-mix(in srgb,var(--border) 78%,transparent);background:color-mix(in srgb,var(--panel) 92%,transparent);backdrop-filter:blur(15px)}.nav-inner{height:68px;display:flex;align-items:center;gap:26px}.logo{display:flex;align-items:center;gap:10px;color:var(--text);text-decoration:none}.logo-mark{width:36px;height:36px;display:grid;place-items:center;border-radius:10px;background:var(--accent);color:#fff}.logo-name{font-size:16px;font-weight:900;letter-spacing:.02em}.logo-by{display:block;margin-top:1px;color:var(--muted);font-size:8px;font-weight:650;letter-spacing:.05em}.marketing-links{display:flex;align-items:center;gap:4px;margin-left:auto}.marketing-links a{padding:8px 10px;border-radius:8px;color:var(--muted);font-size:12px;font-weight:700;text-decoration:none}.marketing-links a:hover{background:var(--panel-soft);color:var(--text)}.nav-actions{display:flex;gap:8px}.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:39px;padding:9px 14px;border:1px solid var(--border);border-radius:9px;background:var(--panel);color:var(--text);font-size:12px;font-weight:800;text-decoration:none;cursor:pointer}.btn:hover{border-color:var(--accent)}.btn-primary{border-color:var(--accent);background:var(--accent);color:#fff}.btn-primary:hover{background:var(--accent-dark)}.btn svg{width:16px;height:16px}
+    .hero{position:relative;overflow:hidden;padding:86px 0 76px;background:linear-gradient(145deg,#f8fbff 0%,#eef5ff 55%,#f8fafc 100%)}.hero::before{content:"";position:absolute;width:620px;height:620px;top:-310px;right:-190px;border:1px solid rgba(37,99,235,.13);border-radius:50%;box-shadow:0 0 0 90px rgba(37,99,235,.025),0 0 0 180px rgba(37,99,235,.018)}.hero-grid{position:relative;display:grid;grid-template-columns:minmax(0,.9fr) minmax(520px,1.1fr);gap:64px;align-items:center}.eyebrow{display:inline-flex;align-items:center;gap:7px;padding:5px 9px;border:1px solid color-mix(in srgb,var(--accent) 25%,var(--border));border-radius:999px;background:var(--accent-soft);color:var(--accent);font-size:10px;font-weight:850;letter-spacing:.06em;text-transform:uppercase}.eyebrow::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--accent)}.hero h1{max-width:650px;margin:18px 0 17px;font-size:clamp(42px,5vw,68px);line-height:.99;letter-spacing:-.055em}.hero h1 span{color:var(--accent)}.hero-copy{max-width:590px;margin:0;color:var(--muted);font-size:16px;line-height:1.7}.hero-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:28px}.hero-actions .btn{min-height:46px;padding:11px 18px;font-size:13px}.hero-proof{display:flex;flex-wrap:wrap;gap:18px;margin-top:28px;color:var(--muted);font-size:10px;font-weight:700}.hero-proof span{display:flex;align-items:center;gap:6px}.hero-proof svg{width:15px;height:15px;color:var(--success)}
+    .dashboard-frame{position:relative;padding:11px;border:1px solid rgba(37,99,235,.16);border-radius:20px;background:rgba(255,255,255,.72);box-shadow:0 30px 80px rgba(30,64,175,.18);backdrop-filter:blur(10px);transform:perspective(1300px) rotateY(-4deg) rotateX(1deg)}.dashboard{height:438px;display:grid;grid-template-rows:42px minmax(0,1fr);overflow:hidden;border:1px solid var(--border);border-radius:12px;background:var(--panel)}.dash-top{display:flex;align-items:center;gap:6px;padding:0 12px;border-bottom:1px solid var(--border)}.dash-dot{width:7px;height:7px;border-radius:50%;background:#cbd5e1}.dash-brand{margin-left:7px;font-size:9px;font-weight:900}.dash-tabs{display:flex;gap:8px;margin-left:20px;color:var(--muted);font-size:7px;font-weight:750}.dash-tabs .active{color:var(--accent)}.dash-main{display:grid;grid-template-columns:175px 1fr;min-height:0}.dash-side{padding:11px;border-right:1px solid var(--border);background:var(--panel)}.dash-search{height:24px;margin-bottom:8px;border:1px solid var(--border);border-radius:6px;background:var(--panel-soft)}.mini-card{margin-bottom:7px;padding:8px;border:1px solid var(--border);border-radius:7px}.mini-card.selected{border-color:var(--accent);background:var(--accent-soft)}.mini-title{display:flex;justify-content:space-between;font-size:7px;font-weight:850}.mini-pill{padding:2px 4px;border-radius:999px;background:rgba(6,118,71,.1);color:var(--success);font-size:5px}.mini-line{height:4px;margin-top:6px;border-radius:999px;background:#e2e8f0}.mini-line.short{width:62%}.dash-map{position:relative;overflow:hidden;background:#e8eef3;background-image:linear-gradient(25deg,transparent 48%,rgba(148,163,184,.18) 49%,rgba(148,163,184,.18) 51%,transparent 52%),linear-gradient(-25deg,transparent 48%,rgba(148,163,184,.13) 49%,rgba(148,163,184,.13) 51%,transparent 52%);background-size:82px 62px}.road{position:absolute;height:11px;border:3px solid rgba(255,255,255,.8);border-radius:50%;background:#d4dce4;transform:rotate(-18deg)}.road.one{width:520px;left:-90px;top:170px}.road.two{width:420px;right:-120px;top:80px;transform:rotate(48deg)}.geofence{position:absolute;width:105px;height:105px;left:48%;top:41%;border:2px solid var(--success);border-radius:50%;background:rgba(6,118,71,.10)}.pin{position:absolute;width:23px;height:29px;display:grid;place-items:center;border:2px solid #fff;border-radius:50% 50% 50% 0;background:var(--accent);color:#fff;font-size:6px;font-weight:900;box-shadow:0 3px 7px rgba(15,23,42,.25);transform:rotate(-45deg)}.pin span{transform:rotate(45deg)}.pin.p1{left:57%;top:43%}.pin.p2{left:28%;top:67%}.pin.p3{left:72%;top:22%}.pin.p4{left:82%;top:72%}.map-status-card{position:absolute;right:12px;bottom:12px;width:150px;padding:10px;border:1px solid var(--border);border-radius:8px;background:rgba(255,255,255,.94);box-shadow:0 8px 18px rgba(15,23,42,.12)}.status-title{font-size:7px;font-weight:850}.status-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:7px}.status-box{padding:5px;border-radius:5px;background:var(--panel-soft)}.status-box strong{display:block;font-size:9px}.status-box span{font-size:5px;color:var(--muted)}
+    .trust-strip{border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:var(--panel)}.trust-inner{display:flex;align-items:center;justify-content:center;gap:38px;min-height:76px;color:var(--muted);font-size:10px;font-weight:750}.trust-label{color:var(--text);font-weight:850}.trust-item{display:flex;align-items:center;gap:7px}.trust-item svg{width:17px;color:var(--accent)}
+    .section{padding:86px 0}.section-soft{background:var(--panel)}.section-heading{max-width:710px;margin:0 auto 42px;text-align:center}.section-kicker{color:var(--accent);font-size:10px;font-weight:900;letter-spacing:.13em;text-transform:uppercase}.section-heading h2{margin:10px 0 12px;font-size:clamp(30px,4vw,45px);letter-spacing:-.04em}.section-heading p{margin:0;color:var(--muted);font-size:14px;line-height:1.65}.feature-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}.feature-card{padding:21px;border:1px solid var(--border);border-radius:14px;background:var(--panel)}.feature-card:hover{border-color:color-mix(in srgb,var(--accent) 38%,var(--border));box-shadow:0 10px 30px rgba(15,23,42,.06);transform:translateY(-2px)}.feature-icon{width:39px;height:39px;display:grid;place-items:center;margin-bottom:15px;border-radius:10px;background:var(--accent-soft);color:var(--accent)}.feature-icon svg{width:20px;height:20px}.feature-card h3{margin:0;font-size:15px}.feature-card p{margin:8px 0 0;color:var(--muted);font-size:12px;line-height:1.65}
+    .workflow{display:grid;grid-template-columns:.85fr 1.15fr;gap:64px;align-items:center}.workflow-copy h2{margin:10px 0 14px;font-size:40px;letter-spacing:-.04em}.workflow-copy>p{color:var(--muted);font-size:14px;line-height:1.7}.workflow-steps{display:grid;gap:9px}.workflow-step{display:grid;grid-template-columns:38px 1fr;gap:12px;padding:15px;border:1px solid var(--border);border-radius:12px;background:var(--panel)}.step-number{width:32px;height:32px;display:grid;place-items:center;border-radius:9px;background:var(--accent-soft);color:var(--accent);font-size:11px;font-weight:900}.workflow-step strong{font-size:13px}.workflow-step p{margin:4px 0 0;color:var(--muted);font-size:11px;line-height:1.5}
+    .use-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.use-card{min-height:210px;display:flex;flex-direction:column;justify-content:flex-end;padding:20px;border:1px solid var(--border);border-radius:14px;background:linear-gradient(160deg,var(--panel),var(--panel-soft));position:relative;overflow:hidden}.use-card::before{content:"";position:absolute;width:110px;height:110px;top:-45px;right:-40px;border-radius:50%;background:var(--accent-soft)}.use-card h3{margin:0;font-size:15px}.use-card p{margin:7px 0 0;color:var(--muted);font-size:11px;line-height:1.6}.use-tag{position:absolute;top:15px;left:15px;padding:4px 7px;border-radius:999px;background:var(--accent-soft);color:var(--accent);font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.06em}
+    .security{padding:34px;display:grid;grid-template-columns:1fr auto;gap:30px;align-items:center;border-radius:18px;background:#0f2652;color:#fff;box-shadow:var(--shadow)}.security h2{margin:8px 0 10px;font-size:31px}.security p{max-width:700px;margin:0;color:rgba(255,255,255,.66);font-size:13px;line-height:1.65}.security-list{display:grid;grid-template-columns:1fr 1fr;gap:8px 24px;margin-top:18px;font-size:10px;font-weight:750}.security-list span{display:flex;align-items:center;gap:7px}.security-list svg{width:14px;color:#6ce9a6}.security .btn{border-color:rgba(255,255,255,.22);background:#fff;color:#0f2652}
+    .cta{padding:88px 0}.cta-box{position:relative;overflow:hidden;padding:55px;border-radius:20px;background:linear-gradient(130deg,var(--accent-dark),var(--accent));color:#fff;text-align:center}.cta-box::before{content:"";position:absolute;width:330px;height:330px;left:-150px;top:-220px;border:1px solid rgba(255,255,255,.18);border-radius:50%;box-shadow:0 0 0 70px rgba(255,255,255,.04)}.cta-box h2{position:relative;margin:0;font-size:38px;letter-spacing:-.04em}.cta-box p{position:relative;max-width:600px;margin:12px auto 24px;color:rgba(255,255,255,.72);font-size:13px;line-height:1.6}.cta-actions{position:relative;display:flex;justify-content:center;gap:9px}.cta-box .btn{border-color:rgba(255,255,255,.25);background:transparent;color:#fff}.cta-box .btn-primary{background:#fff;color:var(--accent-dark)}
+    footer{padding:35px 0;border-top:1px solid var(--border);background:var(--panel)}.footer-inner{display:flex;align-items:center;justify-content:space-between;gap:20px}.footer-copy{color:var(--muted);font-size:10px}.footer-links{display:flex;gap:16px}.footer-links a{color:var(--muted);font-size:10px;font-weight:700;text-decoration:none}.footer-links a:hover{color:var(--accent)}
+    @media(max-width:980px){.marketing-links{display:none}.hero-grid{grid-template-columns:1fr;gap:45px}.hero-copy-col{text-align:center}.hero-copy{margin:auto}.hero-actions,.hero-proof{justify-content:center}.dashboard-frame{max-width:690px;margin:auto;transform:none}.feature-grid{grid-template-columns:1fr 1fr}.workflow{grid-template-columns:1fr}.use-grid{grid-template-columns:1fr 1fr}.security{grid-template-columns:1fr;text-align:center}.security-list{max-width:540px;margin:18px auto 0}.security .btn{justify-self:center}}
+    @media(max-width:650px){.site-wrap{width:min(100% - 28px,1180px)}.nav-inner{height:60px}.logo-by{display:none}.nav-actions .btn:first-child{display:none}.hero{padding:58px 0}.hero-grid{grid-template-columns:minmax(0,1fr)}.hero h1{font-size:40px}.hero-copy{font-size:13px}.dashboard-frame{padding:6px;border-radius:14px}.dashboard{height:330px}.dash-main{grid-template-columns:115px 1fr}.dash-tabs{display:none}.map-status-card{width:125px}.trust-inner{justify-content:flex-start;overflow:auto}.trust-item{flex:0 0 auto}.section{padding:62px 0}.feature-grid,.use-grid{grid-template-columns:1fr}.workflow-copy h2{font-size:32px}.security{padding:25px 18px}.security-list{grid-template-columns:1fr;text-align:left}.cta{padding:60px 0}.cta-box{padding:40px 18px}.cta-box h2{font-size:31px}.cta-actions{flex-direction:column}.footer-inner{align-items:flex-start;flex-direction:column}}
+  </style>
+  <link rel="stylesheet" href="assets/marketing-pages.css">
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" crossorigin="">
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" crossorigin="" defer></script>
+  <script src="assets/marketing-pages.js" defer></script>
+  <link rel="canonical" href="https://atlas-tracking.co.uk/">
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="ATLAS by T2K Group">
+  <meta property="og:title" content="ATLAS by T2K | Digital Chain of Custody for Critical Assets">
+  <meta property="og:description" content="ATLAS by T2K is a critical asset tracking platform providing real-time visibility, physical-asset movement history and an auditable chain of custody.">
+  <meta property="og:url" content="https://atlas-tracking.co.uk/">
+  <script type="application/ld+json">{"@context":"https://schema.org","@graph":[{"@type":"Organization","@id":"https://atlas-tracking.co.uk/#organization","name":"ATLAS by T2K Group","alternateName":["ATLAS by T2K","ATLAS Digital Chain of Custody","ATLAS Critical Asset Tracking"],"url":"https://atlas-tracking.co.uk/","parentOrganization":{"@type":"Organization","name":"T2K Group","url":"https://t2k.group"}},{"@type":"WebSite","@id":"https://atlas-tracking.co.uk/#website","url":"https://atlas-tracking.co.uk/","name":"ATLAS by T2K Group","publisher":{"@id":"https://atlas-tracking.co.uk/#organization"}}]}</script>
 </head>
-<style>
-
-/* Layout */
-.app-wrapper {
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-    width: 87%;
-}
-
-.app-header {
-    height: 64px;
-    flex-shrink: 0;
-}
-
-.app-content {
-    flex: 1;
-    padding: 5px;
-    display: flex;
-}
-
-#map {
-    width: 100%;
-    height: 100%;
-    border-radius: 12px;
-}
-
-/* Sidebar fixes */
-.sidepanel-inner {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-}
-
-/* Nav alignment */
-.app-nav .nav-link {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-}
-
-.app-nav .nav-icon {
-    width: 20px;
-    text-align: center;
-}
-
-/* Push footer down */
-.app-nav-main {
-    flex-grow: 1;
-}
-
-/* Footer styling */
-.app-sidepanel-footer {
-    margin-top: auto;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding-bottom: 15px;
-}
-
-/* Center logo */
-#org-img {
-    display: block;
-    margin: 10px auto;
-    max-width: 120px;
-}
-
-/* Footer text */
-.app-footer {
-    height: 40px;
-    text-align: center;
-}
-
-</style>
-</head> 
-
-<body class="app">   	
-
-<header class="app-header fixed-top">	   	            
-    <div class="app-header-inner">  
-        <div class="container-fluid py-2">
-            <div class="d-flex justify-content-between align-items-center">
-
-                <a id="sidepanel-toggler" class="sidepanel-toggler d-inline-block d-xl-none" href="#">
-                    <svg width="30" height="30" viewBox="0 0 30 30">
-                        <path stroke="currentColor" stroke-width="2" d="M4 7h22M4 15h22M4 23h22"/>
-                    </svg>
-                </a>
-
-                <div class="app-utilities"></div>
-
-            </div>
-        </div>
-    </div>
-
-    <!-- Sidebar -->
-    <div id="app-sidepanel" class="app-sidepanel"> 
-        <div id="sidepanel-drop" class="sidepanel-drop"></div>
-
-        <div class="sidepanel-inner">
-            <a href="#" id="sidepanel-close" class="sidepanel-close d-xl-none">&times;</a>
-
-            <!-- Logo -->
-            <div class="app-branding text-center">
-                <a href="index.html">
-                    <img src="assets/images/atlas_logo.png" style="height:50px;">
-                </a>
-            </div>
-
-            <!-- Nav -->
-            <nav class="app-nav app-nav-main">
-                <ul class="app-menu list-unstyled">
-
-                    <li>
-                        <a class="nav-link active" href="index.html">
-                            <span class="nav-icon"><i class="fa-regular fa-map"></i></span>
-                            <span>Map</span>
-                        </a>
-                    </li>
-
-                    <li>
-                        <a class="nav-link" href="devices.html">
-                            <span class="nav-icon"><i class="fa-solid fa-satellite"></i></span>
-                            <span>Devices</span>
-                        </a>
-                    </li>
-
-                    <li>
-                        <a class="nav-link" href="sites.html">
-                            <span class="nav-icon"><i class="fa-solid fa-building"></i></span>
-                            <span>Sites</span>
-                        </a>
-                    </li>
-
-                    <li class="user-hide" hidden>
-                        <a class="nav-link" href="users.html">
-                            <span class="nav-icon"><i class="fa-solid fa-users"></i></span>
-                            <span>User Management</span>
-                        </a>
-                    </li>
-
-                    <li class="la-hide" hidden>
-                        <a class="nav-link" href="anchors.html">
-                            <span class="nav-icon"><i class="fa-solid fa-location-crosshairs"></i></span>
-                            <span>Anchors</span>
-                        </a>
-                    </li>
-
-                </ul>
-            </nav>
-
-            <!-- Footer -->
-            <div class="app-sidepanel-footer">
-                <img id="org-img" src="" alt="Customer Logo" hidden>
-
-                <nav class="app-nav">
-                    <ul class="app-menu list-unstyled">
-                        <li>
-                            <a class="nav-link" href="#">
-                                <span class="nav-icon"><i class="fa-solid fa-user"></i></span>
-                                <span>My Account</span>
-                            </a>
-                        </li>
-                    </ul>
-                </nav>
-            </div>
-
-        </div>
-    </div>
+<body>
+<header class="marketing-nav">
+  <div class="site-wrap nav-inner">
+    <a class="logo" href="./" aria-label="ATLAS home"><span class="logo-mark"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s6-5.3 6-11a6 6 0 1 0-12 0c0 5.7 6 11 6 11Z"></path><circle cx="12" cy="10" r="2"></circle></svg></span><span class="logo-name">ATLAS<span class="logo-by">A T2K GROUP PRODUCT</span></span></a>
+    <button class="mobile-nav-toggle" type="button" data-mobile-nav-toggle aria-expanded="false" aria-controls="main-navigation"><span></span><span></span><span></span><span class="sr-only">Open navigation</span></button>
+    <nav class="site-nav" id="main-navigation" data-mobile-nav aria-label="Main navigation">
+      <div class="nav-dropdown" data-nav-dropdown><button class="nav-link" type="button" data-dropdown-toggle aria-expanded="false">Industries <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 7.5 5 5 5-5"></path></svg></button><div class="nav-dropdown-menu"><a href="industries/"><strong>Industries overview</strong><span>ATLAS across critical environments</span></a><a href="industries/public-sector/"><strong>Public sector</strong><span>Election and operational accountability</span></a><a href="industries/public-sector/elections/"><strong>Elections</strong><span>Election asset and ballot box visibility</span></a><a href="industries/cold-chain-logistics/"><strong>Cold chain logistics</strong><span>Location and condition context</span></a><a href="industries/high-value-logistics/"><strong>High-value logistics</strong><span>Visibility for valuable assets</span></a><a href="industries/agritech/"><strong>Agritech</strong><span>Remote operational asset visibility</span></a></div></div>
+      <a class="nav-link" href="solutions/">Solutions</a>
+      <div class="nav-dropdown" data-nav-dropdown><button class="nav-link" type="button" data-dropdown-toggle aria-expanded="false">Resources <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 7.5 5 5 5-5"></path></svg></button><div class="nav-dropdown-menu"><a href="resources/"><strong>Resources overview</strong><span>Explore all ATLAS content</span></a><a href="resources/knowledge/"><strong>Knowledge</strong><span>Guides and practical explainers</span></a><a href="resources/faq/"><strong>FAQ</strong><span>Commercial and technical answers</span></a><a href="../docs.html"><strong>Docs</strong><span>Product documentation</span></a></div></div>
+      <a class="nav-link" href="contact/">Talk to Us</a>
+    </nav>
+    <div class="nav-actions"><a class="btn btn-primary" href="https://demo.atlas-tracking.co.uk">Book a Demo</a></div>
+  </div>
 </header>
-
-<!-- Main -->
-<div class="app-wrapper">
-    <div class="app-content">
-        <div id="map"></div>
-    </div>
-</div>
-
-<!-- Footer -->
-<footer class="app-footer">
-    <small>ATLAS Tracking Solutions - A T2K Group Product</small>
-</footer>
-
-<!-- JS -->
-<script src="assets/plugins/popper.min.js"></script>
-<script src="assets/plugins/bootstrap/js/bootstrap.min.js"></script>  
-
-
-<script src="assets/js/login.js"></script>
-<script src="assets/js/utils.js"></script>
-<script src="assets/js/app.js"></script>
-<script src="assets/js/fetchDevices.js"></script>
-<script src="https://unpkg.com/leaflet.fullscreen@2.4.0/Control.FullScreen.js"></script>
-<script src="assets/js/map.js"></script>
-
+<main id="top">
+  <section class="hero"><div class="site-wrap hero-grid"><div class="hero-copy-col"><span class="eyebrow">Digital chain of custody</span><h1>Digital Chain of Custody for Critical Assets</h1><p class="hero-copy">ATLAS by T2K is a critical asset tracking platform that combines real-time location, condition, custody and activity into one auditable operational record.</p><div class="hero-actions"><a class="btn btn-primary" href="https://demo.atlas-tracking.co.uk">Book a Demo <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m9 18 6-6-6-6"></path></svg></a><a class="btn" href="contact/">Talk to Us</a></div><div class="hero-proof"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"></path></svg>Real-time location</span><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"></path></svg>Environmental telemetry</span><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"></path></svg>Auditable events</span></div></div><div class="homepage-map-frame"><div class="homepage-map-toolbar"><span><i></i>Simulated live tracker view</span><small>Drag to pan · scroll to zoom</small></div><div id="homepage-live-map" class="homepage-live-map" data-homepage-map role="application" aria-label="Interactive simulated ATLAS tracker map"></div><div class="homepage-map-status"><span data-homepage-map-status>Loading map…</span><strong>Demo data</strong></div></div></div></section>
+  <section class="trust-strip"><div class="site-wrap trust-inner"><span class="trust-label">Built for operational confidence</span><div class="trust-items"><span class="trust-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3 3 7v5c0 5 3.8 8.7 9 10 5.2-1.3 9-5 9-10V7z"></path></svg>Secure access</span><span class="trust-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19V9m6 10V5m6 14v-7m5 7H2"></path></svg>Live telemetry</span><span class="trust-item"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4zM8 9h8M8 13h8M8 17h5"></path></svg>Complete audit trail</span></div></div></section>
+  <section class="section" id="platform"><div class="site-wrap"><div class="section-heading"><span class="section-kicker">One connected platform</span><h2>From location ping to defensible proof</h2><p>ATLAS combines the operational signals teams need to find assets, detect exceptions and demonstrate chain of custody without piecing together multiple systems.</p></div><div class="feature-grid"><article class="feature-card"><span class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s6-5.3 6-11a6 6 0 1 0-12 0c0 5.7 6 11 6 11Z"></path><circle cx="12" cy="10" r="2"></circle></svg></span><h3>Live asset visibility</h3><p>See every connected tracker on an interactive map using multiple positioning methods, with current coordinates, accuracy, last-seen time and directions.</p></article><article class="feature-card"><span class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="8"></circle><path d="M12 2v4M12 18v4M2 12h4M18 12h4"></path></svg></span><h3>Sites and geofences</h3><p>Define operational locations and know when a device enters, leaves or remains outside an approved site.</p></article><article class="feature-card"><span class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M8 14V5a4 4 0 0 1 8 0v9a6 6 0 1 1-8 0Z"></path></svg></span><h3>Condition monitoring</h3><p>Monitor temperature, humidity, battery and cellular quality alongside physical button and enclosure events.</p></article><article class="feature-card"><span class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 4h16v16H4zM8 9h8M8 13h8M8 17h5"></path></svg></span><h3>Secure, encrypted data</h3><p>Protect operational location, condition and event data with secure access and encryption throughout the ATLAS platform.</p></article><article class="feature-card"><span class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle></svg></span><h3>Controlled team access</h3><p>Invite users, manage licence seats and apply Viewer, Operator, Auditor, Administrator or Owner permissions.</p></article><article class="feature-card"><span class="feature-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5h10M9 12h10M9 19h10"></path><circle cx="4" cy="5" r="1"></circle><circle cx="4" cy="12" r="1"></circle><circle cx="4" cy="19" r="1"></circle></svg></span><h3>Auditable operations</h3><p>Review logins, configuration changes, exports, device events and security activity in one searchable record.</p></article></div></div></section>
+  <section class="section section-soft" id="how-it-works"><div class="site-wrap workflow"><div class="workflow-copy"><span class="section-kicker">How ATLAS works</span><h2>Turn device signals into operational answers.</h2><p>ATLAS gives each team a simple path from connected hardware to action—without losing the evidence needed for compliance, investigation or customer reporting.</p><a class="btn btn-primary" href="solutions/" style="margin-top:14px">Explore Solutions</a></div><div class="workflow-steps"><div class="workflow-step"><span class="step-number">01</span><div><strong>Switch on and deploy</strong><p>Turn on the complete ATLAS tracker unit and deploy it with the critical asset.</p></div></div><div class="workflow-step"><span class="step-number">02</span><div><strong>Define operational sites</strong><p>Create geofences around hubs, warehouses, depots and customer locations.</p></div></div><div class="workflow-step"><span class="step-number">03</span><div><strong>Monitor movement and condition</strong><p>Follow location, battery, signal, temperature, humidity and physical device activity.</p></div></div><div class="workflow-step"><span class="step-number">04</span><div><strong>Investigate and report</strong><p>Search the event history and export a precise chain-of-custody record.</p></div></div></div></div></section>
+  <section class="section" id="use-cases"><div class="site-wrap"><div class="section-heading"><span class="section-kicker">Designed for the real world</span><h2>Protect assets wherever the journey goes</h2><p>Elections are the initial specialist use case. The platform is also designed for potential applications where valuable, sensitive or time-critical assets move between people, facilities and regions.</p></div><div class="use-grid"><article class="use-card"><span class="use-tag">Specialist use case</span><h3>Election asset tracking</h3><p>Support live election-asset visibility, arrival confirmation and an auditable movement history.</p><a class="text-link" href="industries/public-sector/elections/">Explore election asset tracking →</a></article><article class="use-card"><span class="use-tag">Potential application</span><h3>Cold chain logistics</h3><p>Review location and, where supported, environmental readings for temperature-sensitive assets in transit.</p><a class="text-link" href="industries/cold-chain-logistics/">Explore cold chain logistics →</a></article><article class="use-card"><span class="use-tag">Potential application</span><h3>Agricultural equipment</h3><p>Find equipment across dispersed sites and retain movement history for operational review.</p><a class="text-link" href="industries/agritech/">Explore agritech asset tracking →</a></article><article class="use-card"><span class="use-tag">Potential application</span><h3>High-value logistics</h3><p>Build a clearer operational record around valuable assets moving between people, vehicles and sites.</p><a class="text-link" href="industries/high-value-logistics/">Explore high-value logistics →</a></article></div></div></section>
+  <section class="section section-soft" id="security"><div class="site-wrap"><div class="security"><div><span class="section-kicker" style="color:#93c5fd">Security and accountability</span><h2>Every action has an owner and a history.</h2><p>ATLAS is designed around controlled access and traceable operations, helping organisations separate day-to-day work from administration and independent audit.</p><div class="security-list"><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"></path></svg>Role-based access</span><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"></path></svg>Microsoft 365 sign-in</span><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"></path></svg>Magic-link authentication</span><span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 4 4L19 6"></path></svg>Searchable audit logs</span></div></div><a class="btn" href="../docs.html#roles">Explore permissions</a></div></div></section>
+  <section class="cta"><div class="site-wrap"><div class="cta-box"><h2>See ATLAS in action</h2><p>Explore the interactive product experience and see how trackers, geofences, telemetry, users and audit history work together.</p><div class="cta-actions"><a class="btn btn-primary" href="https://demo.atlas-tracking.co.uk">Book a Demo</a><a class="btn" href="contact/">Talk to Us</a></div></div></div></section>
+</main>
+<footer class="site-footer"><div class="site-wrap footer-grid"><div class="footer-brand"><a class="logo" href="./"><span class="logo-mark"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s6-5.3 6-11a6 6 0 1 0-12 0c0 5.7 6 11 6 11Z"></path></svg></span><span class="logo-name">ATLAS<span class="logo-by">A T2K GROUP PRODUCT</span></span></a><p>Digital chain of custody for critical assets, combining purpose-built trackers, resilient connectivity, live operational visibility and auditable reporting.</p></div><div class="footer-column"><strong>Industries</strong><a href="industries/">Overview</a><a href="industries/public-sector/">Public sector</a><a href="industries/public-sector/elections/">Elections</a><a href="industries/cold-chain-logistics/">Cold chain logistics</a><a href="industries/high-value-logistics/">High-value logistics</a><a href="industries/agritech/">Agritech</a></div><div class="footer-column"><strong>Solutions</strong><a href="solutions/">Platform solutions</a><a href="solutions/#visibility">Asset visibility</a><a href="solutions/#custody">Chain of custody</a></div><div class="footer-column"><strong>Resources</strong><a href="resources/">Overview</a><a href="resources/knowledge/">Knowledge</a><a href="resources/faq/">FAQ</a><a href="../docs.html">Docs</a></div><div class="footer-column"><strong>ATLAS</strong><a href="about/">About ATLAS</a><a href="contact/">Talk to Us</a><a href="https://demo.atlas-tracking.co.uk">Book a Demo</a><a href="https://t2k.group" target="_blank" rel="noopener noreferrer">T2K Group</a></div></div><div class="site-wrap footer-bottom"><span>© 2026 T2K Group. ATLAS is a T2K Group product.</span><div><a href="legal/privacy/">Privacy</a></div></div></footer>
 </body>
 </html>
