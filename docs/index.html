@@ -6,14 +6,13 @@
   <meta name="robots" content="noindex,nofollow">
   <meta name="description" content="Public ATLAS product documentation for trackers, sites, geofences, users, roles, logs, notifications and reporting.">
   <title>ATLAS Product Documentation | Critical Asset Tracking</title>
-  <link rel="canonical" href="https://atlas-tracking.co.uk/docs.html">
+  <link rel="canonical" href="https://atlas-tracking.co.uk/docs/index.html">
   <meta property="og:type" content="website">
   <meta property="og:site_name" content="ATLAS by T2K Group">
   <meta property="og:title" content="ATLAS Product Documentation | Critical Asset Tracking">
   <meta property="og:description" content="Public ATLAS product documentation for trackers, sites, geofences, users, roles, logs, notifications and reporting.">
-  <meta property="og:url" content="https://atlas-tracking.co.uk/docs.html">
-  <link rel="stylesheet" href="assets/styles.css">
-  <link rel="stylesheet" href="assets/header-widgets.css">
+  <meta property="og:url" content="https://atlas-tracking.co.uk/docs/index.html">
+  <link rel="stylesheet" href="../assets/marketing-pages.css?v=20260813-docs">
   <style>
     html { scroll-behavior:smooth; }
     .docs-page { padding:0; overflow:visible; }
@@ -24,9 +23,10 @@
     .docs-hero p { max-width:680px; margin:0; color:var(--muted); font-size:14px; line-height:1.6; }
     .docs-search { position:relative; max-width:600px; margin-top:20px; }
     .docs-search svg { position:absolute; left:12px; top:50%; width:18px; color:var(--muted); transform:translateY(-50%); }
-    .docs-search input { width:100%; padding:12px 12px 12px 40px; box-shadow:0 6px 18px rgba(15,23,42,.06); }
+    .docs-search input { width:100%; padding:12px 12px 12px 40px; border:1px solid var(--border); border-radius:10px; outline:0; background:var(--panel); color:var(--text); font:inherit; box-shadow:0 6px 18px rgba(15,23,42,.06); }
+    .docs-search input:focus { border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft),0 6px 18px rgba(15,23,42,.06); }
     .docs-layout { width:min(1180px,100%); display:grid; grid-template-columns:230px minmax(0,1fr); gap:34px; margin:auto; padding:28px 22px 60px; }
-    .docs-nav { position:sticky; top:18px; align-self:start; }
+    .docs-nav { position:sticky; top:86px; align-self:start; }
     .docs-nav-title { margin:0 0 8px; color:var(--muted); font-size:10px; font-weight:850; letter-spacing:.08em; text-transform:uppercase; }
     .docs-nav a { display:block; padding:8px 10px; border-left:2px solid var(--border); color:var(--muted); font-size:12px; font-weight:700; text-decoration:none; }
     .docs-nav a:hover, .docs-nav a.active { border-color:var(--accent); background:var(--accent-soft); color:var(--accent); }
@@ -71,19 +71,20 @@
   </style>
 </head>
 <body>
-<div class="app-shell">
-  <header class="topbar">
-    <a class="brand" href="index.html"><div class="brand-icon" aria-hidden="true"><svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s6-5.3 6-11a6 6 0 1 0-12 0c0 5.7 6 11 6 11Z"></path><circle cx="12" cy="10" r="2"></circle></svg></div><div class="brand-name">ATLAS <span class="brand-subtitle">- Digital Chain of Custody Platform</span></div></a>
-    <nav class="primary-nav" aria-label="Primary navigation">
-      <a class="nav-link" href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s6-5.3 6-11a6 6 0 1 0-12 0c0 5.7 6 11 6 11Z"></path><circle cx="12" cy="10" r="2"></circle></svg><span>Trackers</span></a>
-      <a class="nav-link" href="sites.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 21h18M5 21V8l7-5 7 5v13M9 21v-6h6v6"></path></svg><span>Sites</span></a>
-      <a class="nav-link" href="users.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path><circle cx="9" cy="7" r="4"></circle><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"></path></svg><span>Users</span></a>
-      <a class="nav-link" href="logs.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 5h10M9 12h10M9 19h10"></path><circle cx="4" cy="5" r="1"></circle><circle cx="4" cy="12" r="1"></circle><circle cx="4" cy="19" r="1"></circle></svg><span>Logs</span></a>
-      <a class="nav-link active" href="docs.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V4H6.5A2.5 2.5 0 0 0 4 6.5z"></path><path d="M4 6.5v13A2.5 2.5 0 0 0 6.5 22H20v-5"></path></svg><span>Docs</span></a>
+<header class="marketing-nav">
+  <div class="site-wrap nav-inner">
+    <a class="logo" href="/index.html" aria-label="ATLAS home"><span class="logo-mark"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 21s6-5.3 6-11a6 6 0 1 0-12 0c0 5.7 6 11 6 11Z"></path><circle cx="12" cy="10" r="2"></circle></svg></span><span class="logo-name">ATLAS<span class="logo-by">A T2K GROUP PRODUCT</span></span></a>
+    <button class="mobile-nav-toggle" type="button" data-mobile-nav-toggle aria-expanded="false" aria-controls="main-navigation"><span></span><span></span><span></span><span class="sr-only">Open navigation</span></button>
+    <nav class="site-nav" id="main-navigation" data-mobile-nav aria-label="Main navigation">
+      <div class="nav-dropdown" data-nav-dropdown><button class="nav-link" type="button" data-dropdown-toggle aria-expanded="false">Industries <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 7.5 5 5 5-5"></path></svg></button><div class="nav-dropdown-menu"><a href="/industries/index.html"><strong>Industries overview</strong><span>ATLAS across critical environments</span></a><a href="/industries/public-sector/index.html"><strong>Public sector</strong><span>Election and operational accountability</span></a><a href="/industries/public-sector/elections/index.html"><strong>Elections</strong><span>Election asset and ballot box visibility</span></a><a href="/industries/cold-chain-logistics/index.html"><strong>Cold chain logistics</strong><span>Location and condition context</span></a><a href="/industries/high-value-logistics/index.html"><strong>High-value logistics</strong><span>Visibility for valuable assets</span></a><a href="/industries/agritech/index.html"><strong>Agritech</strong><span>Remote operational asset visibility</span></a></div></div>
+      <a class="nav-link" href="/solutions/index.html">Solutions</a>
+      <div class="nav-dropdown" data-nav-dropdown><button class="nav-link active" type="button" data-dropdown-toggle aria-expanded="false">Resources <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 7.5 5 5 5-5"></path></svg></button><div class="nav-dropdown-menu"><a href="/resources/index.html"><strong>Resources overview</strong><span>Explore all ATLAS content</span></a><a href="/resources/knowledge/index.html"><strong>Knowledge</strong><span>Guides and practical explainers</span></a><a href="/resources/faq/index.html"><strong>FAQ</strong><span>Commercial and technical answers</span></a><a href="/docs/index.html" aria-current="page"><strong>Docs</strong><span>Product documentation</span></a></div></div>
+      <a class="nav-link" href="/contact/index.html">Talk to Us</a>
     </nav>
-    <div class="topbar-spacer"></div><div class="demo-badge">DEMO</div>
-    <button class="icon-btn" type="button" data-open-modal="settingsModal" aria-label="Open settings"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"></circle><path d="M19 12a7 7 0 0 0-.1-1l2-1.5-2-3.5-2.4 1A7 7 0 0 0 15 6l-.3-2.6h-4L10.4 6A7 7 0 0 0 8 7L5.6 6 3.6 9.5l2 1.5a7 7 0 0 0 0 2l-2 1.5 2 3.5L8 17a7 7 0 0 0 2.4 1l.3 2.6h4L15 18a7 7 0 0 0 2.4-1l2.4 1 2-3.5-2-1.5a7 7 0 0 0 .2-1Z"></path></svg><span>Settings</span></button>
-  </header>
+    <div class="nav-actions"><a class="btn btn-primary" href="https://demo.atlas-tracking.co.uk">Book a Demo</a></div>
+  </div>
+</header>
+<div class="app-shell">
   <main class="page-content docs-page">
     <section class="docs-hero"><div class="docs-hero-inner"><div class="docs-kicker">ATLAS help centre</div><h1>Platform documentation</h1><p>Learn how to monitor trackers, manage sites and users, understand telemetry, and review your organisation's audit history.</p><label class="docs-search"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.35-4.35"></path></svg><input id="docsSearch" type="search" placeholder="Search the documentation…"></label></div></section>
     <div class="docs-layout">
@@ -154,8 +155,6 @@
     </div>
   </main>
 </div>
-<div class="modal-backdrop" id="settingsModal" hidden><div class="modal" role="dialog" aria-modal="true" aria-labelledby="docsSettingsTitle"><div class="modal-head"><div><div class="modal-title" id="docsSettingsTitle">Settings</div><div class="modal-subtitle">Documentation display options</div></div><button type="button" class="modal-close" data-close-modal="settingsModal" aria-label="Close settings">×</button></div><div class="modal-body"><label class="settings-row"><span><strong>Dark mode</strong><small>Use the dark interface</small></span><input type="checkbox" data-dark-toggle></label></div><div class="modal-actions"><button type="button" data-close-modal="settingsModal">Done</button></div></div></div>
-<script src="assets/common.js"></script>
 <script>
 (() => {
   const search=document.getElementById("docsSearch"),sections=[...document.querySelectorAll(".doc-section")],empty=document.getElementById("docsEmpty"),links=[...document.querySelectorAll(".docs-nav a")];
@@ -164,6 +163,6 @@
   const observer=new IntersectionObserver(entries=>{const current=entries.filter(entry=>entry.isIntersecting).sort((a,b)=>a.boundingClientRect.top-b.boundingClientRect.top)[0];if(!current)return;links.forEach(link=>link.classList.toggle("active",link.hash===`#${current.target.id}`));},{rootMargin:"-15% 0px -75%",threshold:0});sections.forEach(section=>observer.observe(section));
 })();
 </script>
-<script src="assets/header-widgets.js"></script>
+<script src="../assets/marketing-pages.js?v=20260813-docs" defer></script>
 </body>
 </html>
