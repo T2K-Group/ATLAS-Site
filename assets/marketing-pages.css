@@ -219,6 +219,7 @@ img, svg { max-width: 100%; }
 .form-consent { display: flex; align-items: flex-start; gap: 9px; color: var(--muted); font-size: 11px; }
 .form-consent { margin-top: 20px; line-height: 1.55; }
 .form-consent input { flex: 0 0 auto; margin-top: 2px; }
+.form-turnstile { min-height: 65px; margin-top: 20px; }
 .form-submit-error { margin: 14px 0 0; padding: 11px 13px; border: 1px solid #fda29b; border-radius: 9px; background: #fef3f2; color: #b42318; font-size: 12px; line-height: 1.5; }
 .form-submit-error a { color: inherit; font-weight: 800; }
 .article-byline strong, .article-byline small { display: block; }

@@ -120,6 +120,17 @@
   });
 
   document.querySelectorAll("[data-contact-form]").forEach(form => {
+    const showSubmitError = messageText => {
+      form.querySelector("[data-form-submit-error]")?.remove();
+      const message = document.createElement("p");
+      message.dataset.formSubmitError = "";
+      message.className = "form-submit-error";
+      message.setAttribute("role", "alert");
+      message.textContent = messageText;
+      form.append(message);
+      message.focus?.();
+    };
+
     form.addEventListener("submit", async event => {
       event.preventDefault();
       let valid = true;
@@ -133,6 +144,13 @@
         form.querySelector(":invalid")?.focus();
         return;
       }
+
+      const turnstileToken = form.querySelector('[name="cf-turnstile-response"]')?.value;
+      if (!turnstileToken) {
+        showSubmitError("Please complete the security check before submitting.");
+        return;
+      }
+
       const submit = form.querySelector('[type="submit"]');
       const originalLabel = submit?.innerHTML;
       const existingError = form.querySelector("[data-form-submit-error]");
@@ -143,12 +161,20 @@
       }
       try {
         const formData = new FormData(form);
-        const payload = Object.fromEntries(formData.entries());
-        payload.consent = formData.has("consent");
-        const response = await fetch("https://api.t2k.group/v1/contact-form", {
+        const formDetails = Object.fromEntries(formData.entries());
+        delete formDetails["cf-turnstile-response"];
+        formDetails.consent = formData.has("consent");
+        const response = await fetch("https://api.t2k.group/v1/content/forms", {
           method: "POST",
-          headers: { "Content-Type": "application/json", "Accept": "application/json" },
-          body: JSON.stringify(payload)
+          headers: {
+            "Content-Type": "application/json",
+            "Accept": "application/json",
+            "X-Turnstile-Token": turnstileToken
+          },
+          body: JSON.stringify({
+            source: "https://atlas-tracking.co.uk/contact/",
+            form_details: formDetails
+          })
         });
         if (!response.ok) throw new Error(`Contact form returned ${response.status}`);
         form.hidden = true;
@@ -159,13 +185,9 @@
         }
       } catch (error) {
         console.error("Unable to submit contact form", error);
-        const message = document.createElement("p");
-        message.dataset.formSubmitError = "";
-        message.className = "form-submit-error";
-        message.setAttribute("role", "alert");
-        message.innerHTML = 'We could not send your enquiry. Please try again or email <a href="mailto:atlas@t2k.group">atlas@t2k.group</a>.';
-        form.append(message);
+        showSubmitError("We could not send your enquiry. Please try again or email atlas@t2k.group.");
       } finally {
+        window.turnstile?.reset("#contact-turnstile");
         if (submit) {
           submit.disabled = false;
           submit.innerHTML = originalLabel;
