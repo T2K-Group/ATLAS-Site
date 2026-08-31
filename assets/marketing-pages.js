@@ -301,7 +301,7 @@
           className: `history-point-icon${current ? " current" : ""}`,
           html: `<span>${index + 1}</span>`, iconSize: [27, 27], iconAnchor: [13, 13], popupAnchor: [0, -11]
         });
-        const marker = L.marker([point.lat, point.lng], { icon, title: `${point.place} — ${point.time}` }).addTo(map);
+        const marker = L.marker([point.lat, point.lng], { icon, title: `${point.place}, ${point.time}` }).addTo(map);
         marker.bindPopup(`<div class="homepage-map-popup history-map-popup">
           <div class="map-popup-head"><span class="map-popup-icon">${index + 1}</span><span><strong>${point.place}</strong><small>${point.event}</small><time class="map-popup-timestamp">${point.time}</time></span></div>
           <div class="map-popup-coordinates"><span>Recorded position</span><code>${point.lat.toFixed(5)}, ${point.lng.toFixed(5)}</code></div>
