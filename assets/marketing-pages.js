@@ -208,7 +208,7 @@
         scrollWheelZoom: true
       }).setView([51.5074, -0.1278], 11);
 
-      L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
+      L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png?key=cb1_2nid_1_6abc701d271016b90ce2e70e", {
         subdomains: "abcd",
         maxZoom: 19,
         attribution: "&copy; OpenStreetMap contributors &copy; CARTO"
@@ -289,7 +289,7 @@
         { time: "13 Aug 2026, 09:18:03", place: "London Operations Hub", event: "Journey completed", lat: 51.51331, lng: -0.07543, battery: 92, signal: "Excellent · -82 dBm", accuracy: "4 m", source: "GNSS" }
       ];
       const map = L.map(historyMapElement, { zoomControl: true, preferCanvas: true, scrollWheelZoom: true });
-      L.tileLayer("https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png", {
+      L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png?key=cb1_2nid_1_6abc701d271016b90ce2e70e", {
         subdomains: "abcd", maxZoom: 19, attribution: "&copy; OpenStreetMap contributors &copy; CARTO"
       }).addTo(map);
       const route = history.map(point => [point.lat, point.lng]);
