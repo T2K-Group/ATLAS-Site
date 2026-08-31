@@ -126,6 +126,7 @@
       message.dataset.formSubmitError = "";
       message.className = "form-submit-error";
       message.setAttribute("role", "alert");
+      message.tabIndex = -1;
       message.textContent = messageText;
       form.append(message);
       message.focus?.();
