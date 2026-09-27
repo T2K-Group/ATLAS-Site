@@ -119,6 +119,17 @@
     });
   });
 
+  const preferredDate = document.querySelector("#contact-preferred-date");
+  if (preferredDate) {
+    preferredDate.min = new Date().toISOString().slice(0, 10);
+  }
+
+  const bookingTopic = new URLSearchParams(window.location.search).get("topic");
+  if (bookingTopic === "platform-demo") {
+    const contactTopic = document.querySelector("#contact-topic");
+    if (contactTopic) contactTopic.value = "Platform demonstration";
+  }
+
   document.querySelectorAll("[data-contact-form]").forEach(form => {
     const showSubmitError = messageText => {
       form.querySelector("[data-form-submit-error]")?.remove();
