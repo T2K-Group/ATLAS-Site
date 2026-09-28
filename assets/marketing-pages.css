@@ -119,6 +119,7 @@ img, svg { max-width: 100%; }
 /* Resource, knowledge and blog pages */
 .featured-resource, .featured-post { display: grid; grid-template-columns: 1.05fr .95fr; overflow: hidden; border: 1px solid var(--border); border-radius: 18px; background: #fff; box-shadow: 0 14px 40px rgba(15,23,42,.06); }
 .featured-resource-copy { padding: 36px; }
+.featured-resource-image { width: 100%; height: 100%; min-height: 300px; display: block; border-right: 1px solid var(--border); object-fit: cover; object-position: center; }
 .featured-resource-copy h2 { margin: 12px 0; font-size: 30px; letter-spacing: -.03em; }
 .featured-resource-copy p { color: var(--muted); line-height: 1.7; }
 .featured-resource-visual, .article-visual { position: relative; min-height: 260px; overflow: hidden; background: linear-gradient(145deg,#dceafe,#eff6ff); }
@@ -507,6 +508,7 @@ img, svg { max-width: 100%; }
   .site-nav .nav-dropdown-menu { position: static; width: auto; margin: 5px 0; box-shadow: none; }
   .mobile-panel:not([hidden]) { display: grid; position: fixed; inset: 68px 0 auto; padding: 18px 20px; border-bottom: 1px solid var(--border); background: #fff; }
   .page-hero-grid, .subpage-hero .page-shell, .split-layout, .split-section, .latest-layout, .contact-layout, .featured-resource, .featured-post, .industry-feature { grid-template-columns: 1fr; }
+  .featured-resource-image { border-right: 0; border-bottom: 1px solid var(--border); }
   .t2k-context { grid-template-columns: 1fr; }
   .solution-detail > .page-shell.split-section { grid-template-columns: 1fr; }
   .hero-visual { min-height: 280px; }
