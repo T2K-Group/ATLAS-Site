@@ -309,6 +309,10 @@ img, svg { max-width: 100%; }
 .legal-table { width: 100%; border-collapse: collapse; font-size: 12px; }
 .legal-table th, .legal-table td { padding: 12px; border: 1px solid var(--border); text-align: left; vertical-align: top; }
 .legal-table th { background: var(--panel-soft); }
+.tracker-comparison table { min-width: 620px; }
+.tracker-comparison caption { padding-bottom: 12px; text-align: left; color: var(--muted); }
+.tracker-comparison th[scope="row"] { width: 22%; }
+.tracker-comparison td { width: 39%; }
 
 /* Industries, public sector and solutions */
 .industry-feature, .proof-panel, .quote-panel, .solution-callout { padding: 30px; border: 1px solid var(--border); border-radius: 17px; background: #fff; box-shadow: 0 12px 35px rgba(15,23,42,.06); }
